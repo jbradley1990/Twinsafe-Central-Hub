@@ -6,10 +6,10 @@
   const DEFAULT_CONFIG = {
     title: 'DLS Information Centre',
     pages: [
-      { label: 'Rig Overview', href: '/#rig-overview' },
-      { label: 'Getting Started', href: '/#getting-started' },
-      { label: 'PDF Chart Generation', href: '/#pdf-chart-generation' },
-      { label: 'Historical Trend', href: '/#historical-trend' }
+      { label: 'Rig Overview', href: '/rig-overview' },
+      { label: 'Getting Started', href: '/getting-started' },
+      { label: 'PDF Chart Generation', href: '/pdf-chart-generation' },
+      { label: 'Historical Trend', href: '/historical-trend' }
     ]
   };
 

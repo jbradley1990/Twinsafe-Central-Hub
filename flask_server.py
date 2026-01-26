@@ -11,7 +11,6 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # optional
 
 BASE_DIR = Path(__file__).resolve().parent
-GUIDE_DIR = BASE_DIR / "guide"
 PDF_DIR = BASE_DIR / "static" / "pdfs"
 
 #WEBVISU_URL = "http://127.0.0.1:8080/webvisu.htm"  # ← adjust to your HMI
@@ -28,14 +27,26 @@ def bounce_portal_host():
 @app.get("/")
 def root():
     # HTML should not be aggressively cached in dev; let it revalidate
-    resp = send_from_directory(str(GUIDE_DIR), "guide.html", conditional=True)
+    resp = send_from_directory(str(BASE_DIR / "PDF-Chart-Generation"), "PDF-Chart-Generation.html", conditional=True)
     # Short cache or revalidate:
     resp.headers["Cache-Control"] = "no-cache"
     return resp
 
-@app.get("/guide/<path:path>")
-def guide_files(path):
-    return send_from_directory(str(GUIDE_DIR), path)
+@app.get("/rig-overview")
+def rig_overview():
+    return send_from_directory(str(BASE_DIR / "Rig-Overview"), "Rig-Overview.html")
+
+@app.get("/getting-started")
+def getting_started():
+    return send_from_directory(str(BASE_DIR / "Getting-Started"), "Getting-Started.html")
+
+@app.get("/pdf-chart-generation")
+def pdf_chart_generation():
+    return send_from_directory(str(BASE_DIR / "PDF-Chart-Generation"), "PDF-Chart-Generation.html")
+
+@app.get("/historical-trend")
+def historical_trend():
+    return send_from_directory(str(BASE_DIR / "Historical-Trend"), "Historical-Trend.html")
 
 @app.get("/api/pdf-list")
 def pdf_list():
