@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Historical Trend</title>
+
+<!-- NAV BAR SCRIPT -->
+<script src="../Components/Nav-Bar.js"></script>
+
+<style>
+/* ---------------------------------------------------------
+   GLOBAL THEME (Dark industrial UI)
+--------------------------------------------------------- */
+:root{
+  --bg:#000000;
+  --tile:#1f1f1f;
+  --tile-hover:#2a2a2a;
+  --text:#ffffff;
+  --muted:#bfbfbf;
+  --radius:14px;
+  overflow:hidden;
+}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family: Inter, system-ui, sans-serif;
+}
+
+/* ---------------------------------------------------------
+   PAGE CONTAINER
+--------------------------------------------------------- */
+/* ---------------------------------------------------------
+   SHARED LAYOUT (MATCHES PDF / GETTING STARTED)
+--------------------------------------------------------- */
+.pcg-layout{
+  display:grid;
+  grid-template-columns:260px 1fr;
+  gap:20px;
+  height:calc(100vh - 160px);
+}
+
+.pcg-sidebar{
+  background:#141414;
+  border:1px solid #2f2f2f;
+  border-radius:14px;
+  padding:14px;
+  overflow-y:auto;
+}
+
+.pcg-content{
+  background:#141414;
+  border:1px solid #2f2f2f;
+  border-radius:14px;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+}
+
+.pcg-content-scroll{
+  flex:1;
+  min-height:0;
+  overflow:auto;
+}
+
+.page-wrap{
+  padding:110px 0 0;   /* only navbar spacing */
+  margin:0;
+  height:100vh;
+}
+
+
+
+/* ---------------------------------------------------------
+   IFRAME STYLING
+--------------------------------------------------------- */
+.trend-frame{
+  width:100%;
+  height:100%;
+  border:none;          /* remove box */
+  border-radius:0;      /* remove rounding */
+  background:black;     /* blend with page */
+}
+
+
+
+</style>
+</head>
+
+<body>
+
+<script>
+/* ---------------------------------------------------------
+   INITIALISE NAV BAR
+--------------------------------------------------------- */
+document.addEventListener("DOMContentLoaded", () => {
+  initNavigationBar({
+    title: "Historical Trend",
+    pages: [
+      { label: "Rig Overview", href: "../Rig-Overview/Rig-Overview.html" },
+      { label: "Getting Started", href: "../Getting-Started/Getting-Started.html" },
+      { label: "PDF Chart Generation", href: "../PDF-Chart-Generation/PDF-Chart-Generation.html" },
+      { label: "Historical Trend", href: "../Historical-Trend/Historical-Trend.html" }
+    ]
+  });
+});
+</script>
+
+<!-- ---------------------------------------------------------
+     PAGE CONTENT
+--------------------------------------------------------- -->
+<div class="page-wrap">
+  <iframe
+    src="/static/historical_trend.html"
+    class="trend-frame"
+    title="Historical Trend Viewer">
+  </iframe>
+</div>
+
+
+
+</body>
+</html>

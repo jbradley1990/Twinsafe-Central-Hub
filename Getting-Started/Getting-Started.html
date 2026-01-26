@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Getting Started</title>
+
+<!-- NAV BAR SCRIPT (UNCHANGED) -->
+<script src="../Components/Nav-Bar.js"></script>
+
+
+
+<style>
+:root{
+  --bg:#000;
+  --panel:#141414;
+  --tile:#1f1f1f;
+  --border:#2f2f2f;
+  --text:#fff;
+  --muted:#bfbfbf;
+  --radius:14px;
+}
+
+*{ box-sizing:border-box }
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Inter,system-ui,sans-serif;
+}
+
+/* PAGE */
+.page-wrap{
+  height: calc(100vh - 90px);   /* match PDF page */
+  padding: 20px 30px;
+  box-sizing: border-box;
+}
+
+
+/* LAYOUT */
+.gs-layout{
+  display: grid;
+  grid-template-columns: 260px 1fr; /* same as PDF */
+  gap: 20px;
+  height: 100%;
+}
+
+
+/* ---------------------------------------------------------
+   SIDEBAR TREE
+--------------------------------------------------------- */
+.gs-sidebar{
+  background:#141414;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:12px;
+  overflow-y:auto;
+}
+
+
+.tree{
+  list-style:none;
+  margin:0;
+  padding:0;
+}
+
+.tree ul{
+  list-style:none;
+  padding-left:20px;
+  margin-top:6px;
+}
+
+.tree li > div{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+.tree a{
+  flex:1;
+  display:block;
+  padding:8px 10px;
+  border-radius:10px;
+  background:#1f1f1f;
+  border:1px solid var(--border);
+  color:var(--text);
+  text-decoration:none;
+  font-size:14px;
+}
+
+.tree a:hover{
+  background:#2a2a2a;
+}
+
+.toggle{
+  background:#1f1f1f;
+  border:1px solid var(--border);
+  border-radius:8px;
+  color:#aaa;
+  width:30px;
+  height:30px;
+  cursor:pointer;
+}
+
+.toggle::before{
+  content:"▸";
+}
+
+.open > div > .toggle::before{
+  content:"▾";
+}
+
+.tree ul{
+  display:none;
+}
+
+.open > ul{
+  display:block;
+}
+
+/* CONTENT */
+.gs-content{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:24px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.gs-content article{
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* -----------------------------------------
+   NORMALISE TAB COLOURS (match PDF page)
+----------------------------------------- */
+
+.gs-sidebar a{
+  background:#2a2a2a;
+  border:1px solid #3a3a3a;
+  color:#ffffff;
+}
+
+.gs-sidebar a:hover{
+  background:#333333;
+}
+
+/* Parent items (with arrows) */
+.gs-sidebar li.has-children > div > a{
+  background:#2a2a2a;
+}
+
+/* Child items */
+.gs-sidebar ul ul a{
+  background:#262626;
+}
+
+/* Active tab */
+.gs-sidebar a.active{
+  background:#3a3a3a;
+  border-color:#555;
+}
+
+
+h1{ margin-top:0; font-size:36px; }
+h2{ margin-top:0; }
+
+p,li{ color:var(--muted); }
+
+video,img{
+  width:100%;
+  max-width:900px;
+  margin:16px auto;
+  display:block;
+  border-radius:14px;
+  border:1px solid #2a2a2a;
+}
+
+/* SECTION ROUTING */
+.guide-section{ display:none; }
+.guide-section.active{ display:block; }
+</style>
+</head>
+
+<body>
+
+<!-- NAV BAR INIT -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  initNavigationBar({
+    title: "Getting Started",
+    pages: [
+      { label: "Rig Overview", href: "../Rig-Overview/Rig-Overview.html" },
+      { label: "Getting Started", href: "../Getting-Started/Getting-Started.html" },
+      { label: "PDF Chart Generation", href: "../PDF-Chart-Generation/PDF-Chart-Generation.html" },
+      { label: "Historical Trend", href: "../Historical-Trend/Historical-Trend.html" }
+    ]
+  });
+});
+</script>
+
+<div class="page-wrap">
+<div class="gs-layout">
+
+ <!-- -----------------------------------------------------
+         SIDEBAR
+    ------------------------------------------------------ -->
+    <aside class="gs-sidebar">
+    <ul class="tree">
+
+        <li class="open has-children">
+        <div>
+            <a href="#getting-started-overview">Getting Started</a>
+            <button class="toggle" aria-label="Toggle section"></button>
+        </div>
+
+        <ul>
+
+            <!-- PRESSURE DISPLAY -->
+            <li class="has-children">
+            <div>
+                <a href="#pressure-display">Pressure Display</a>
+                <button class="toggle"></button>
+            </div>
+            <ul>
+                <li><a href="#channel-selector">Channel Selector</a></li>
+                <li><a href="#channel-configuration">Channel Configuration</a></li>
+                <li><a href="#channel-monitor">Channel Monitor</a></li>
+
+                <li class="has-children">
+                <div>
+                    <a href="#start-button">Start Button</a>
+                    <button class="toggle"></button>
+                </div>
+                <ul>
+                    <li><a href="#start-automation">Start Automation</a></li>
+                    <li><a href="#start-cycles">Start Cycles</a></li>
+                    <li><a href="#start-hold">Start Hold</a></li>
+                    <li><a href="#start-temperature">Start Temperature</a></li>
+                </ul>
+                </li>
+            </ul>
+            </li>
+
+            <!-- TREND -->
+            <li class="has-children">
+            <div>
+                <a href="#trend">Trend</a>
+                <button class="toggle"></button>
+            </div>
+            <ul>
+                <li><a href="#trend-zoom">Trend Zoom</a></li>
+                <li><a href="#trend-history">Trend History</a></li>
+                <li><a href="#trend-window">Trend Window</a></li>
+            </ul>
+            </li>
+
+            <!-- DETAILS -->
+            <li class="has-children">
+            <div>
+                <a href="#details">Details</a>
+                <button class="toggle"></button>
+            </div>
+            <ul>
+                <li><a href="#detail-entry">Detail Entry</a></li>
+                <li><a href="#detail-save">Detail Save</a></li>
+                <li><a href="#detail-load">Detail Load</a></li>
+                <li><a href="#detail-reset">Detail Reset</a></li>
+            </ul>
+            </li>
+
+            <!-- UNIQUE NUMBERS -->
+            <li class="has-children">
+            <div>
+                <a href="#unique-number">Unique Number</a>
+                <button class="toggle"></button>
+            </div>
+            <ul>
+                <li><a href="#unique-number-entry">Entry</a></li>
+                <li><a href="#unique-number-save">Save</a></li>
+                <li><a href="#unique-number-load">Load</a></li>
+                <li><a href="#unique-number-reset">Reset</a></li>
+            </ul>
+            </li>
+
+
+            <!-- SINGLE LINKS -->
+            <li><a href="#previous-pdf">Previous PDF</a></li>
+
+        </ul>
+        </li>
+
+    </ul>
+    </aside>
+
+<!-- CONTENT -->
+<main class="gs-content">
+
+<article>
+
+<section id="getting-started-overview" class="guide-section active">
+<h1>Getting Started</h1>
+<p>Welcome to the Data Logging Information Centre.</p>
+</section>
+
+<section id="pressure-display" class="guide-section">
+<h2>Pressure Display</h2>
+<img src="/guide/Clips/Pressure%20Display/Pressure%20Display%20Overview.png">
+</section>
+
+<section id="channel-selector" class="guide-section">
+<h2>Channel Selector</h2>
+<video controls>
+<source src="/guide/Clips/Pressure%20Display/Channel%20Selector.mp4">
+</video>
+<ul>
+<li>Open the selector</li>
+<li>Select a channel</li>
+<li>Confirm</li>
+</ul>
+</section>
+
+<section id="channel-configuration" class="guide-section">
+<h2>Channel Configuration</h2>
+<video controls>
+<source src="/guide/Clips/Pressure%20Display/Channel%20Configuration.mp4">
+</video>
+</section>
+
+<section id="channel-monitor" class="guide-section">
+<h2>Channel Monitor</h2>
+<video controls>
+<source src="/guide/Clips/Pressure%20Display/Channel%20Monitor.mp4">
+</video>
+</section>
+
+<section id="trend" class="guide-section">
+<h2>Trend</h2>
+<img src="/guide/Clips/Trend/Trend%20Overview.png">
+</section>
+
+<section id="details" class="guide-section">
+<h2>Details</h2>
+<img src="/guide/Clips/Details/Details%20Overview.png">
+</section>
+
+
+</article>
+</main>
+
+</div>
+</div>
+
+<!-- SIDEBAR TOGGLE -->
+<script>
+document.querySelectorAll('.toggle').forEach(btn=>{
+  btn.onclick=e=>{
+    e.preventDefault();
+    btn.closest('li').classList.toggle('open');
+  };
+});
+</script>
+
+<!-- ROUTER -->
+<script>
+(function(){
+  function route(){
+    const id=(location.hash||"#getting-started-overview").slice(1);
+
+    document.querySelectorAll(".guide-section").forEach(s=>{
+      s.classList.toggle("active", s.id===id);
+    });
+
+    document.querySelectorAll(".gs-sidebar a").forEach(a=>{
+      a.classList.toggle("active", a.getAttribute("href")==="#"+id);
+    });
+
+    const link=document.querySelector(`.gs-sidebar a[href="#${CSS.escape(id)}"]`);
+    if(link){
+      link.closest("li.has-children")?.classList.add("open");
+      link.closest("ul")?.closest("li.has-children")?.classList.add("open");
+    }
+
+    document.querySelector(".gs-content").scrollTop=0;
+  }
+
+  window.addEventListener("hashchange",route);
+  document.addEventListener("DOMContentLoaded",route);
+})();
+</script>
+
+</body>
+</html>
