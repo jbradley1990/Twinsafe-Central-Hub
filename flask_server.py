@@ -27,7 +27,7 @@ def bounce_portal_host():
 @app.get("/")
 def root():
     # HTML should not be aggressively cached in dev; let it revalidate
-    resp = send_from_directory(str(BASE_DIR / "PDF-Chart-Generation"), "PDF-Chart-Generation.html", conditional=True)
+    resp = send_from_directory(str(BASE_DIR / "Rig-Overview"), "Rig-Overview.html", conditional=True)
     # Short cache or revalidate:
     resp.headers["Cache-Control"] = "no-cache"
     return resp
