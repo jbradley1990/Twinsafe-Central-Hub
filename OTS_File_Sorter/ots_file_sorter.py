@@ -270,6 +270,101 @@ def ensure_dir(path: Path) -> None:
 # Core processing
 # -----------------------------
 
+def cleanup_run_folder(run_dir: Path, data_csvs: list, details_path: Path, status_path: Path) -> None:
+    """Delete source files and the run folder if empty."""
+    # Delete the source data CSVs
+    for csv_path in data_csvs:
+        try:
+            csv_path.unlink()
+        except Exception as e:
+            logging.warning("Could not delete %s: %s", csv_path, e)
+
+    # Delete the source details.json
+    try:
+        details_path.unlink()
+    except Exception as e:
+        logging.warning("Could not delete %s: %s", details_path, e)
+
+    # Delete status.json
+    try:
+        status_path.unlink()
+    except Exception as e:
+        logging.warning("Could not delete %s: %s", status_path, e)
+
+    # Remove folder if it is empty now
+    try:
+        next(run_dir.iterdir())
+        logging.info("Run folder not empty (leftovers kept): %s", run_dir)
+    except StopIteration:
+        run_dir.rmdir()
+        logging.info("Processed and removed run folder: %s", run_dir)
+
+
+def process_calibration_run(
+    run_dir: Path,
+    details: dict,
+    status_map: dict,
+    details_path: Path,
+    status_path: Path,
+    data_csvs: list,
+    pdfs: list,
+    dry_run: bool = False,
+) -> None:
+    """Process a calibration run folder."""
+    meta = details.get("metadata", {})
+    data_logger = safe_part(meta.get("Data Logger"), "Unknown")
+    date_time = (meta.get("Date Time") or "").strip()
+    date_part = date_time.split("_")[0] if date_time else "Unknown_Date"
+    date_folder = safe_part(date_part, "Unknown_Date")
+
+    # Determine overall decision from the first entry in status.json
+    decision = "pass"  # default
+    if status_map:
+        # Get the first value in the status map
+        first_val = str(next(iter(status_map.values()))).strip().lower()
+        if first_val == "fail":
+            decision = "fail"
+        # "none", "pass", or anything else defaults to "pass" per instructions
+
+    dest_base = ROOT / "Calibration" / data_logger / date_folder
+    dest_data_dir = dest_base / "Data"
+    dest_pdf_dir = dest_base / "PDF" / ("Pass" if decision == "pass" else "Fail")
+
+    if dry_run:
+        logging.info("[DRY] Calibration routing to %s", dest_base)
+    else:
+        ensure_dir(dest_data_dir)
+        ensure_dir(dest_pdf_dir)
+
+    # Copy Data (CSV and details.json)
+    for csv_path in data_csvs:
+        target_csv = dest_data_dir / csv_path.name
+        if dry_run:
+            logging.info("[DRY] Copy %s -> %s", csv_path, target_csv)
+        else:
+            shutil.copy2(csv_path, target_csv)
+
+    target_details = dest_data_dir / details_path.name
+    if dry_run:
+        logging.info("[DRY] Copy %s -> %s", details_path, target_details)
+    else:
+        shutil.copy2(details_path, target_details)
+
+    # Move all PDFs to the decision folder
+    for pdf_path in pdfs:
+        new_pdf_name = add_status_to_pdf_name(pdf_path.name, decision)
+        dest_pdf_path = dest_pdf_dir / new_pdf_name
+        if dry_run:
+            logging.info("[DRY] Move %s -> %s", pdf_path, dest_pdf_path)
+        else:
+            shutil.move(str(pdf_path), str(dest_pdf_path))
+
+    if dry_run:
+        logging.info("[DRY] Cleanup would delete inputs in %s", run_dir)
+    else:
+        cleanup_run_folder(run_dir, data_csvs, details_path, status_path)
+
+
 _processing_lock = threading.Lock()  # lock for processing set
 _processing_folders = set()  # folders currently being processed
 
@@ -311,6 +406,17 @@ def process_run_folder(run_dir: Path, dry_run: bool = False) -> None:
         details = load_json(details_path)  # parse details
         status_map = load_json(status_path)  # parse status
 
+        # Collect run files
+        data_csvs = sorted(run_dir.glob("*_data_*.csv"))  # all split packets
+        pdfs = sorted(run_dir.glob("*.pdf"))  # all pdfs
+
+        # BRANCH: Calibration vs Standard
+        if "calibration" in details:
+            process_calibration_run(
+                run_dir, details, status_map, details_path, status_path, data_csvs, pdfs, dry_run
+            )
+            return
+
         meta = details.get("metadata", {})  # metadata object
         ots_number = safe_part(meta.get("OTS Number"), "UNKNOWN_OTS_NUMBER")  # OTS Number folder
         line_item = safe_part(meta.get("Line Item"), "UNKNOWN_LINE_ITEM")  # Line Item folder
@@ -326,10 +432,6 @@ def process_run_folder(run_dir: Path, dry_run: bool = False) -> None:
         if not unique_numbers:  # nothing to route to
             logging.warning("No unique_number entries found in channel_info for %s", run_dir)  # log
             return  # can't proceed
-
-        # Collect run files
-        data_csvs = sorted(run_dir.glob("*_data_*.csv"))  # all split packets
-        pdfs = sorted(run_dir.glob("*.pdf"))  # all pdfs
 
         # Create destination folders (one per unique number)
         dest_base_by_unique = {}  # mapping unique -> destination base folder
@@ -397,35 +499,10 @@ def process_run_folder(run_dir: Path, dry_run: bool = False) -> None:
                 shutil.move(str(pdf_path), str(dest_pdf_path))  # move PDF
 
         # If we got here, copies/moves were successful, so we can clean up incoming files
-        if dry_run:  # if dry-run
-            logging.info("[DRY] Cleanup would delete copied inputs and status.json in %s", run_dir)  # log
+        if dry_run:
+            logging.info("[DRY] Cleanup would delete inputs in %s", run_dir)
         else:
-            # Delete the source data CSVs (we copied them to final destinations)
-            for csv_path in data_csvs:  # each csv
-                try:
-                    csv_path.unlink()  # delete
-                except Exception as e:
-                    logging.warning("Could not delete %s: %s", csv_path, e)  # log
-
-            # Delete the source details.json (we copied it to final destinations)
-            try:
-                details_path.unlink()  # delete
-            except Exception as e:
-                logging.warning("Could not delete %s: %s", details_path, e)  # log
-
-            # Delete status.json (used for routing)
-            try:
-                status_path.unlink()  # delete
-            except Exception as e:
-                logging.warning("Could not delete %s: %s", status_path, e)  # log
-
-            # Remove folder if it is empty now
-            try:
-                next(run_dir.iterdir())  # try to find any remaining file
-                logging.info("Run folder not empty (leftovers kept): %s", run_dir)  # not empty
-            except StopIteration:
-                run_dir.rmdir()  # remove empty directory
-                logging.info("Processed and removed run folder: %s", run_dir)  # log success
+            cleanup_run_folder(run_dir, data_csvs, details_path, status_path)
 
     except Exception:
         logging.exception("Failed processing folder: %s", run_dir)  # log stack trace
