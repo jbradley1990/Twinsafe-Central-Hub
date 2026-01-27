@@ -450,7 +450,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
                 </svg>
                 <h3 class="mt-2 text-lg font-medium">No data loaded</h3>
-                <p class="mt-1 text-sm">Please select your data CSV (and its matching details file).</p>
+                <p class="mt-1 text-sm">Please select your data CSV.</p>
             </div>
         </div>
     </div>
@@ -458,8 +458,9 @@ document.addEventListener("DOMContentLoaded", () => {
         <div id="pinnedHover" class="pinned-hover hidden" style="min-height:0;"></div>
         <div id="measurementOverlay" class="measurement-overlay hidden"></div>
         <div id="controlOverlay" style="position:fixed; right:32px; bottom:32px; z-index:30; display:flex; flex-direction:column; align-items:center; gap:0.75rem; background:none; box-shadow:none; padding:0; width:260px;">
-            <label id="fileInputLabel" class="file-input-btn" style="margin-bottom:0.5rem; width: 100%; text-align: center; background:#272727; border-radius:16px; border:none; box-shadow:0 2px 8px #0004;">Select Files
-                <input type="file" id="fileInput" accept=".csv,.json" multiple class="hidden">
+            <label id="fileInputLabel" class="file-input-btn" style="margin-bottom:0.5rem; width: 100%; text-align: center; background:#272727; border-radius:16px; border:none; box-shadow:0 2px 8px #0004;">
+                <span id="fileInputText">Select CSV File</span>
+                <input type="file" id="fileInput" accept=".csv" class="hidden">
             </label>
             <button id="measurementToggleBtn" type="button" style="width: 85%; padding: 10px 14px; text-align: center; background:#475569; border-radius:16px; border:none; box-shadow:0 2px 8px #0004; color:#fff; font-size:0.875rem; font-weight:500; cursor:pointer; transition:background 0.2s;">Cursors Off</button>
         </div>
@@ -468,6 +469,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <script>
         const fileInput = document.getElementById('fileInput');
         const fileInputLabel = document.getElementById('fileInputLabel');
+        const fileInputText = document.getElementById('fileInputText');
         const chartDiv = document.getElementById('chart');
         const messageOverlay = document.getElementById('messageOverlay');
         const measurementToggleBtn = document.getElementById('measurementToggleBtn');
@@ -476,30 +478,20 @@ document.addEventListener("DOMContentLoaded", () => {
         const controlOverlay = document.getElementById('controlOverlay');
 
 
-        const groupMap = {
-            'Upstream': 'Pressure',
-            'Downstream': 'Pressure',
-            'Ambient Temperature': 'Temperature'
-        };
-        const colorsMap = {
-            'Upstream': '#FF0000',
-            'Downstream': '#00B050',
-            'Ambient Temperature': '#0000FF'
-        };
-        const lineStyleGroup = {
-            'Upstream': '-',
-            'Downstream': '-',
-            'Ambient Temperature': 'dot'
-        };
-        const CHANNEL_UNITS_MAP = {
-            'Upstream': 'psi',
-            'Downstream': 'psi',
-            'Ambient Temperature': '°C'
-        };
+        const PRESSURE_COLORS = [
+            '#FF0000', // Red
+            '#00B050', // Green
+            '#FF8C00', // DarkOrange
+            '#FFD700', // Gold
+            '#8A2BE2', // BlueViolet
+            '#00CED1', // DarkTurquoise
+            '#FF00FF', // Magenta
+            '#ADFF2F'  // GreenYellow
+        ];
+        const AMBIENT_TEMP_COLOR = '#0000FF'; // Blue
         const MEASUREMENT_HANDLE_COLORS = ['#ffffff', '#ffffff'];
 
         let dataFile = null;
-        let detailsFile = null;
         let channelInfo = [];
         let channelNames = [];
         let hoverTime = null;
@@ -533,21 +525,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         function handleFileSelection(event) {
             const files = Array.from(event.target.files || []);
-            fileInputLabel.textContent = `${files.length} file(s) selected`;
-            if (files.length) fileInputLabel.classList.add('selected');
+            if (files.length === 0) return;
 
-            dataFile = files.find(f => f.name.includes('data')) || null;
-            detailsFile = files.find(f => f.name.includes('details.csv') || f.name.includes('details.json')) || null;
+            if (fileInputText) fileInputText.textContent = `${files[0].name}`;
+            fileInputLabel.classList.add('selected');
 
-            if (!detailsFile && dataFile) {
-                showErrorState('Missing Details', 'Could not find matching details file. Please select both files.');
-                setDataAvailability(false);
-                return;
-            }
-
-            if (dataFile && detailsFile) {
-                handlePlotRequest();
-            }
+            dataFile = files[0];
+            handlePlotRequest();
         }
 
         function readFileAsText(file) {
@@ -560,89 +544,81 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         async function handlePlotRequest() {
-            if (!dataFile || !detailsFile) return;
+            if (!dataFile) return;
             if (measurementModeActive) disableMeasurementMode();
             setDataAvailability(false);
-            showLoadingState('Reading and processing files...');
+            showLoadingState('Reading and processing file...');
             try {
                 const dataCsvText = await readFileAsText(dataFile);
-                const detailsText = await readFileAsText(detailsFile);
-
-                if (detailsFile.name.endsWith('.json')) {
-                    await plotData(dataCsvText, null, detailsText);
-                } else {
-                    await plotData(dataCsvText, detailsText, null);
-                }
+                await plotData(dataCsvText);
                 hideMessageOverlay();
                 setDataAvailability(true);
             } catch (error) {
                 console.error(error);
-                showErrorState('Failed to process files.', error?.message || 'An unexpected error occurred.');
+                showErrorState('Failed to process file.', error?.message || 'An unexpected error occurred.');
             }
         }
 
         function parseTimestamp(tsStr) {
-            const [date, time] = tsStr.split(' ');
-            const [d, m, y] = date.split('/').map(Number);
-            const [h, min, sMs] = time.split(':');
-            const [s, ms] = sMs.split('.').map(Number);
-            return new Date(y, m - 1, d, +h, +min, s, ms);
+            return new Date(tsStr);
         }
 
-        async function plotData(dataCsvText, detailsCsvText, detailsJsonText) {
+        async function plotData(dataCsvText) {
             if (!dataCsvText) return;
-            if (detailsCsvText) {
-                const detLines = detailsCsvText.trim().split('\n');
-                channelInfo = detLines.slice(19, 45).map(l => {
-                    const p = l.split(',');
-                    return { name: p[0]?.trim(), visible: (p[3] || '').trim().toUpperCase() === 'TRUE' };
-                }).filter(ci => ci.name);
-            } else if (detailsJsonText) {
-                const details = JSON.parse(detailsJsonText);
-                channelInfo = (details.channel_info || []).map(ci => ({ name: ci.channel, visible: !!ci.visible })).filter(ci => ci.name);
-            } else {
-                showErrorState('Missing Details', 'No details file provided.');
-                return;
-            }
 
             const dataLines = dataCsvText.trim().split('\n');
-            const rows = dataLines.slice(1);
-            if (!rows.length) {
+            if (dataLines.length < 2) {
                 showErrorState('No Data', 'The data file does not contain any rows.');
                 return;
             }
-            if (rows[0].split(',').length - 1 !== channelInfo.length) {
-                showErrorState('Column mismatch', 'Channel details do not match the data file.');
-                return;
+
+            const header = dataLines[0].split(',');
+            // header[0] is Datetime
+            // header[1-8] are Pressure channels
+            // header[9] is Ambient Temperature
+
+            channelInfo = [];
+            for (let i = 1; i <= 9; i++) {
+                const name = (header[i] || '').trim();
+                const isTemp = (i === 9);
+                channelInfo.push({
+                    name: name || (isTemp ? 'Ambient Temperature' : `Pressure ${i}`),
+                    visible: name !== '',
+                    isTemp: isTemp,
+                    colIndex: i
+                });
             }
 
-            const groups = [...new Set(channelInfo.map(ci => groupMap[ci.name]).filter(Boolean))];
-            if (!groups.length) groups.push('Primary');
+            const groups = ['Pressure', 'Temperature'];
 
-            const traces = channelInfo.map((ci) => {
-                const grp = groupMap[ci.name] || groups[0];
+            const traces = channelInfo.map((ci, idx) => {
+                const grp = ci.isTemp ? 'Temperature' : 'Pressure';
                 let axisIndex = groups.indexOf(grp);
-                if (axisIndex < 0) axisIndex = 0;
                 const yaxis = axisIndex === 0 ? 'y' : `y${axisIndex + 1}`;
+                const color = ci.isTemp ? AMBIENT_TEMP_COLOR : (PRESSURE_COLORS[idx] || '#888');
+                const dash = ci.isTemp ? 'dot' : 'solid';
+
                 return {
                     x: [],
                     y: [],
                     mode: 'lines',
                     name: ci.name,
-                    line: { width: 1.5, color: colorsMap[ci.name] || '#888', dash: lineStyleGroup[ci.name] || '-' },
+                    line: { width: 1.5, color: color, dash: dash },
                     hoverinfo: 'none',
                     yaxis,
                     visible: ci.visible ? true : 'legendonly'
                 };
             });
 
+            const rows = dataLines.slice(1);
             rows.forEach(row => {
                 const cols = row.split(',');
                 const timestamp = parseTimestamp(cols[0].trim());
-                channelInfo.forEach((_, idx) => {
+                if (isNaN(timestamp.getTime())) return;
+
+                channelInfo.forEach((ci, idx) => {
                     const trace = traces[idx];
-                    if (!trace) return;
-                    const value = parseFloat(cols[idx + 1]);
+                    const value = parseFloat(cols[ci.colIndex]);
                     if (!Number.isNaN(value)) {
                         trace.x.push(timestamp);
                         trace.y.push(value);
@@ -665,7 +641,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const axisIdx = index + 1;
                 const key = axisIdx === 1 ? 'yaxis' : `yaxis${axisIdx}`;
                 if (grp === 'Pressure' && axisIdx === 1) {
-                    layout[key] = { title: { text: `Pressure (${CHANNEL_UNITS_MAP['Upstream']})`, font: { color: '#fff' } }, tickfont: { color: '#fff' }, tickformat: ',.0f', anchor: 'x', side: 'left', position: 0 };
+                    layout[key] = { title: { text: `Pressure (psi)`, font: { color: '#fff' } }, tickfont: { color: '#fff' }, tickformat: ',.0f', anchor: 'x', side: 'left', position: 0 };
                 } else if (grp === 'Temperature') {
                     layout[key] = { showticklabels: false, ticks: '', title: '', anchor: 'x', overlaying: 'y', side: axisIdx % 2 === 1 ? 'left' : 'right', position: 1 - (0.1 * (axisIdx - 2)), range: [-60, 260] };
                 } else {
@@ -784,17 +760,15 @@ document.addEventListener("DOMContentLoaded", () => {
             const timeText = formatTimeForHeader(target);
             const traces = chartDiv?.data || [];
 
-            // Only show Upstream, Downstream, and Ambient Temperature
-            const allowedChannels = ["Upstream", "Downstream", "Ambient Temperature"];
             const rowObjects = traces.map((trace, index) => {
                 const name = channelNames[index] || trace?.name || `Trace ${index + 1}`;
-                if (!allowedChannels.includes(name)) return null;
+                const info = channelInfo[index];
                 const shown = getTraceVisible(index);
-                const color = trace?.line?.color || colorsMap[name] || '#fff';
+                const color = trace?.line?.color || '#fff';
                 const isDotted = (trace?.line?.dash || '') === 'dot';
                 const value = sampleTraceValueAt(index, target);
                 const valueStr = formatHoverValue(value);
-                const unit = CHANNEL_UNITS_MAP[name] || '';
+                const unit = info ? (info.isTemp ? '°C' : 'psi') : '';
                 const strokeColor = shown ? color : '#6b7280';
                 const unitSpan = unit ? `<span style="font-size:0.85rem; opacity:0.75;">${unit}</span>` : '';
 
@@ -1338,8 +1312,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 const stats = computeTraceStatsBetween(traces[i], startMs, endMs);
                 if (!stats) continue;
                 const name = channelNames[i] || traces[i]?.name || `Trace ${i + 1}`;
-                const unit = CHANNEL_UNITS_MAP[name] || '';
-                const color = traces[i]?.line?.color || colorsMap[name] || '#ffffff';
+                const info = channelInfo[i];
+                const unit = info ? (info.isTemp ? '°C' : 'psi') : '';
+                const color = traces[i]?.line?.color || '#ffffff';
                 const unitText = unit ? ` ${unit}` : '';
                 rows.push(`
                     <div class="measurement-row">
