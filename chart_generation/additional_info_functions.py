@@ -64,12 +64,26 @@ def locate_key_time_rows(cleaned_data, hold_info: pd.Series, channel_unique_numb
             index_data['EOH_Index'][0] = nearest_idx
 
         # Fill display table
-        pressure_val = cleaned_data.loc[nearest_idx, pressure_col]
+        pressure_row = cleaned_data.iloc[nearest_idx]
 
-        temp_val = cleaned_data.loc[nearest_idx, 'Ambient Temperature']
+        pressure_val = pressure_row[pressure_col]
+        if hasattr(pressure_val, "iloc"):
+            pressure_val = pressure_val.iloc[0]
+        elif hasattr(pressure_val, "__iter__") and not isinstance(pressure_val, (str, bytes)):
+            pressure_val = next(iter(pressure_val))
+
+        temp_val = pressure_row['Ambient Temperature']
+        if hasattr(temp_val, "iloc"):
+            temp_val = temp_val.iloc[0]
+        elif hasattr(temp_val, "__iter__") and not isinstance(temp_val, (str, bytes)):
+            temp_val = next(iter(temp_val))
 
         display_table_data['Datetime'][i] = ts.strftime("%d/%m/%Y %H:%M:%S")
-        display_table_data[pressure_col_display][i] = int(pressure_val)
+        try:
+            display_table_data[pressure_col_display][i] = int(float(pressure_val))
+        except (ValueError, TypeError):
+            display_table_data[pressure_col_display][i] = 0
+
         display_table_data['Ambient Temperature (°C)'][i] = temp_val
 
     holds_indices = pd.DataFrame(index_data)

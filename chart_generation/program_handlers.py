@@ -5,7 +5,6 @@ from datetime import datetime
 import shutil
 from typing import List, Dict, Any
 import pandas as pd
-from concurrent.futures import ProcessPoolExecutor
 
 from graph_plotter import (
     plot_production_channel_data,
@@ -95,7 +94,7 @@ class ProductionReportGenerator(BaseReportGenerator):
         return self.pdf_output_path / f"{ots_number}_{line_item}_{unique_number}_{date_time_raw}.tmp.pdf"
 
     def generate(self) -> List[Path]:
-        """Generate reports for all visible channels in parallel."""
+        """Generate reports for all visible channels."""
         # Identify visible channels to process
         channel_info = self.info_obj
         visible_channels = [
@@ -106,15 +105,9 @@ class ProductionReportGenerator(BaseReportGenerator):
         if not visible_channels:
             return []
 
-        # If only one channel, avoid overhead of process pool
-        if len(visible_channels) == 1:
-            return [self.generate_single_report(visible_channels[0])]
-
-        # Use ProcessPoolExecutor to parallelize generation across multiple CPU cores.
-        # This is particularly effective on the Pi 5's quad-core processor.
-        with ProcessPoolExecutor() as executor:
-            # We use list() to realize the results from the iterator
-            generated_paths = list(executor.map(self.generate_single_report, visible_channels))
+        generated_paths = []
+        for channel in visible_channels:
+            generated_paths.append(self.generate_single_report(channel))
 
         return generated_paths
 
@@ -125,11 +118,20 @@ class ProductionReportGenerator(BaseReportGenerator):
         channel_col = str(unique_number)
 
         # Build cleaned_data with the specific channel
-        cleaned_data = self.cleaned_data[[
-            "Datetime",
-            channel_col,
-            "Ambient Temperature"
-        ]].copy()
+        # Ensure we only pick one column even if there are duplicates in self.cleaned_data
+        source_cols = list(self.cleaned_data.columns)
+        try:
+            dt_idx = source_cols.index("Datetime")
+            ch_idx = source_cols.index(channel_col)
+            at_idx = source_cols.index("Ambient Temperature")
+            cleaned_data = self.cleaned_data.iloc[:, [dt_idx, ch_idx, at_idx]].copy()
+        except ValueError:
+            # Fallback to standard selection if something is missing
+            cleaned_data = self.cleaned_data[[
+                "Datetime",
+                channel_col,
+                "Ambient Temperature"
+            ]].copy()
 
         # Copy metadata so you don't mutate shared dict
         metadata = dict(self.test_metadata)

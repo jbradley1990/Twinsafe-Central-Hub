@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import argparse
+import sys
 
 from data_loading import (
     load_test_information,
@@ -14,12 +15,17 @@ def generate_report(primary_data_file, test_details_file, pdf_output_path):
     """
     Processes data files to generate PDF reports.
     """
+    print(f"Loading test information from {test_details_file}...")
     test_metadata, info_obj = load_test_information(test_details_file)
+
+    print(f"Preparing primary data from {primary_data_file}...")
 
     cleaned_data, active_channels = prepare_primary_data(
         primary_data_file,
         info_obj,
     )
+
+    print(f"Active channels: {active_channels}")
 
     if isinstance(info_obj, dict) and "channel_index" in info_obj:
         handler_class = CalibrationReportGenerator
@@ -36,7 +42,9 @@ def generate_report(primary_data_file, test_details_file, pdf_output_path):
         cleaned_data=cleaned_data,
         info_obj=info_obj,
     )
-    handler_instance.generate()
+    print(f"Generating {program_name} report(s)...")
+    generated = handler_instance.generate()
+    print(f"Successfully generated {len(generated)} report(s).")
 
 
 
@@ -53,6 +61,7 @@ def main():
     args = parser.parse_args()
 
     try:
+        print(f"Starting report generation for {args.primary_data_file}")
         generate_report(
             primary_data_file=args.primary_data_file,
             test_details_file=args.test_details_file,
@@ -60,8 +69,10 @@ def main():
         )
         print("Done")
     except Exception as exc:
+        import traceback
         print(f"Error: {exc}")
-        raise
+        traceback.print_exc()
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
