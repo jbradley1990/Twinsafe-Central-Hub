@@ -241,61 +241,104 @@ body{
 </style>
 <style>
 /* Style for the measurement overlay (cursor info panel) */
-.measurement-overlay {
-    background: #181818ee;
-    color: #fff;
-    border-radius: 14px;
-    box-shadow: 0 4px 24px #000a;
-    padding: 20px 24px 20px 24px;
-    margin: 0 0 12px 0;
-    font-family: Inter, system-ui, sans-serif;
-    font-size: 1rem;
-    line-height: 1.5;
-    max-width: 320px;
-    min-width: 220px;
-    word-break: break-word;
-    white-space: pre-line;
-    overflow-y: auto;
-    z-index: 30;
-}
-.measurement-overlay h3 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin: 0 0 0.5em 0;
-    color: #fff;
-}
-.measurement-overlay .section {
-    margin-bottom: 1em;
-    border-bottom: 1px solid #232323;
-    padding-bottom: 0.5em;
-}
-.measurement-overlay .section:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-}
-.measurement-overlay .label {
-    color: #bfbfbf;
-    font-size: 0.95em;
-    margin-right: 0.5em;
-}
-.measurement-overlay .value {
-    font-family: monospace;
-    color: #fff;
-}
-.measurement-overlay .unit {
-    color: #aaa;
-    font-size: 0.9em;
-    margin-left: 0.2em;
-}
-.measurement-overlay .minmax {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.2em;
-}
-.measurement-overlay .delta {
-    color: #00bfff;
-    font-weight: 500;
-}
+        /* Measurement overlay */
+    .measurement-overlay {
+        /*background: #181818ee;*/
+        color: #fff;
+        border-radius: 14px;
+        box-shadow: 0 4px 24px #000a;
+        /*padding: 20px 24px 20px 24px;*/
+        margin: 0 0 12px 0;
+        font-family: Inter, system-ui, sans-serif;
+        font-size: 1rem;
+        line-height: 1.5;
+        max-width: 320px;
+        min-width: 220px;
+        word-break: break-word;
+        white-space: pre-line;
+        overflow-y: auto;
+        z-index: 30;
+    }
+        .measurement-overlay.hidden { display: none; }
+        .measurement-header { font-size: 1.25rem; /*font-weight: 600; */ }
+        .measurement-meta { display: grid; grid-template-columns: 1fr; gap: 0.25rem; font-size: 0.95rem; opacity: 0.9; }
+        .measurement-meta span { font-weight: 600; opacity: 1; color: #fff; }
+        .measurement-rows { overflow-y: auto; max-height: 220px; display: flex; flex-direction: column; gap: 0.5rem; padding-right: 0.25rem; }
+        .measurement-row { border: 1px solid rgba(255,255,255,0.08); border-radius: 0.65rem; padding: 0.4rem 0.6rem; background: rgba(255,255,255,0.04); }
+        .measurement-row-title { font-size: 1.05rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; }
+        .measurement-row-title span { display: inline-flex; width: 14px; height: 4px; border-radius: 9999px; }
+        .measurement-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.35rem 0.5rem; margin-top: 0.45rem; font-size: 0.95rem; }
+        .measurement-stat { display: flex; flex-direction: column; gap: 0.1rem; }
+        .measurement-stat-label { text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; opacity: 0.7; }
+        .measurement-empty { font-size: 0.95rem; opacity: 0.8; }
+
+        .measurement-handle-layer {
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          z-index: 18;
+        }
+
+        .measurement-handle {
+          position: absolute;
+          width: 24px;
+          height: 24px;
+          border-radius: 9999px;
+          background: var(--cursor-color, #facc15);
+          color: var(--cursor-color, #facc15);
+          border: 2px solid rgba(15, 23, 42, 0.8);
+          box-shadow: 0 6px 16px rgba(0,0,0,0.45);
+          transform: translate(-9999px, -9999px);
+          pointer-events: auto;
+          cursor: grab;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: visible;
+        }
+
+        .measurement-handle::after {
+          content: '';
+          position: absolute;
+          top: -20px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 4px;
+          height: 18px;
+          border-radius: 9999px;
+          background: currentColor;
+          opacity: 0.85;
+        }
+
+        .measurement-handle.is-dragging {
+          cursor: grabbing;
+        }
+
+        /* Info panel */
+        .pinned-hover {
+          position: relative;
+          flex: 1 1 auto;
+          min-height: 0;
+         /*background: rgba(20, 20, 20, 0.88);*/
+         /*border: 1px solid rgba(255, 255, 255, 0.12);*/
+          border-radius: 0.75rem; /*padding: 0.5rem 0.75rem;*/ width: 100%;
+          font-size: 1.05rem; line-height: 1; box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+          pointer-events: auto; color: #f5f5f5; backdrop-filter: blur(6px);
+          max-height: 95vh; z-index: 100;
+          display: flex; flex-direction: column; /*gap: 0.65rem;*/ overflow: hidden;
+        }
+        .pinned-hover.hidden { display: none; }
+        .pinned-hover .ph-time { font-weight: 600; font-size: 1.5rem; margin-bottom: 0.35rem; color: #fff; position: sticky; top: 0; background: rgba(20,20,20,0.95); padding-bottom: 0.25rem; text-align:left; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+        .pinned-hover .ph-time span[data-role="time-text"] { flex: 1 1 auto; }
+        .pinned-hover .ph-rows { display: flex; flex-direction: column; gap: 0.25rem; overflow-y: auto; flex: 1 1 auto; min-height: 0; padding-right: 0.35rem; margin-right: -0.35rem; }
+        .pinned-hover .ph-row { display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem; padding: 0.35rem 0.25rem; border-radius: 0.5rem; cursor: pointer; transition: background 120ms ease, opacity 120ms ease, filter 120ms ease; min-height: 56px; }
+        .pinned-hover .ph-row:hover { background: rgba(255,255,255,0.06); }
+        .pinned-hover .ph-row.is-hidden { opacity: 0.45; filter: grayscale(35%); }
+        .pinned-hover .ph-label { display: flex; align-items: center; gap: 0.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; font-size: 1.15rem; }
+        .pinned-hover .ph-value { font-variant-numeric: tabular-nums; color: #e2e8f0; width: 100%; font-size: 1.35rem; display: flex; align-items: baseline; gap: 0.35rem; }
+        .pinned-hover .ph-empty { opacity: 0.8; font-size: 0.95rem; }
+
+        html, body { overflow: hidden; }
 </style>
 <style>
 /* --- R&D style key panel --- */
@@ -418,7 +461,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <label id="fileInputLabel" class="file-input-btn" style="margin-bottom:0.5rem; width: 100%; text-align: center; background:#272727; border-radius:16px; border:none; box-shadow:0 2px 8px #0004;">Select Files
                 <input type="file" id="fileInput" accept=".csv,.json" multiple class="hidden">
             </label>
-            <button id="measurementToggleBtn" type="button" class="w-[120px] h-[40px] rounded-xl bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium shadow transition">Cursors Off</button>
+            <button id="measurementToggleBtn" type="button" style="width: 85%; padding: 10px 14px; text-align: center; background:#475569; border-radius:16px; border:none; box-shadow:0 2px 8px #0004; color:#fff; font-size:0.875rem; font-weight:500; cursor:pointer; transition:background 0.2s;">Cursors Off</button>
         </div>
     </div>
 
@@ -891,11 +934,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
 
-            if (measurementOverlay && !measurementOverlay.classList.contains('hidden')) {
-                const measurementRect = measurementOverlay.getBoundingClientRect();
-                if (measurementRect && Number.isFinite(measurementRect.top)) {
-                    bottomLimit = Math.min(bottomLimit, measurementRect.top - 12);
-                }
+            // Reserve space for measurement overlay when cursors are active
+            // Use a fixed height instead of measuring DOM to prevent resize on hover
+            if (measurementModeActive) {
+                bottomLimit = bottomLimit - 450; // Reserve fixed space for measurement overlay
             }
 
             const clearance = bottomLimit - pinnedTop;
@@ -967,10 +1009,11 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!measurementToggleBtn) return;
             const active = measurementModeActive && !measurementToggleBtn.disabled;
             measurementToggleBtn.textContent = active ? 'Cursors On' : 'Cursors Off';
-            measurementToggleBtn.classList.toggle('bg-amber-500', active);
-            measurementToggleBtn.classList.toggle('hover:bg-amber-600', active);
-            measurementToggleBtn.classList.toggle('bg-slate-700', !active);
-            measurementToggleBtn.classList.toggle('hover:bg-slate-600', !active);
+            if (active) {
+                measurementToggleBtn.style.backgroundColor = '#f59e0b';
+            } else {
+                measurementToggleBtn.style.backgroundColor = '#475569';
+            }
         }
 
         function ensureMeasurementHandleLayer() {
@@ -1024,8 +1067,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const rect = chartDiv.getBoundingClientRect();
             const plotLeft = rect.left + (Number.isFinite(size.l) ? size.l : 0);
             const plotWidth = Number.isFinite(size.w) ? size.w : rect.width;
-            const bottom = rect.top + (Number.isFinite(size.t) ? size.t : 0) + (Number.isFinite(size.h) ? size.h : rect.height);
-            const handleSize = 22;
+            const bottom = rect.top + (Number.isFinite(size.t) ? size.t : 0) + (Number.isFinite(size.h) ? size.h : rect.height) - 65;
+            const handleSize = 24;
             measurementHandleElements.forEach((handle, idx) => {
                 if (!handle) return;
                 const color = MEASUREMENT_HANDLE_COLORS[idx] || MEASUREMENT_HANDLE_COLORS[0];
