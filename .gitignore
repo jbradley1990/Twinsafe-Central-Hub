@@ -1,0 +1,8 @@
+# ignore compiled python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ignore PDFs
+*.pdf
