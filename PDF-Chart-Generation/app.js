@@ -14,11 +14,7 @@
   let detailsOriginalName = '';           // original details file name
 
   const metadataInputs = new Map();       // label -> <input|checkbox>
-  const channelEditors = [];              // [{ channel, transducerInput, gaugeInput, visibleCheckbox }]
-  const massSpecTimingEditors = [];       // [{ label, startInput, stopInput }]
-  const holdsEditors = [];                // [{...inputs}]
-  const cyclesEditors = [];               // [{...inputs}]
-  let calibrationEditor = {};             // {channelNameInput, channelIndexInput, maxRangeInput, keyPointsInputs}
+  const channelEditors = [];              // [{ ...inputs }]
 
   let uiWired = false;                    // prevent double binding
   let allContentSections = [];            // sections created by buildEditor()
@@ -244,10 +240,6 @@
 
     metadataInputs.clear();
     channelEditors.length = 0;
-    massSpecTimingEditors.length = 0;
-    holdsEditors.length = 0;
-    cyclesEditors.length = 0;
-    calibrationEditor = {};
     allContentSections = [];
 
     const createSection = (key, title, contentNode) => {
@@ -275,287 +267,55 @@
     const channelInfoForm = el('div');
     const channelTable = el('table', { style: 'width: 100%; border-collapse: collapse;' });
     const channelHeader = el('tr', {}, [
-      th('Channel'),
+      th('Unique #', '1%'),
       th('Transducer'),
-      th('Gauge'),
-      th('Visible', '1%')
+      th('Visible', '1%'),
+      th('SOS'),
+      th('SOH'),
+      th('EOH'),
+      th('BTO', '1%'),
+      th('RTO', '1%')
     ]);
     const channelBody = el('tbody');
     channelTable.append(channelHeader, channelBody);
 
-    details.channel_info.forEach(channel => {
+    (details.channel_info || []).forEach(channel => {
+      const uniqueNumberInput = el('input', { type: 'text', value: channel.unique_number, ...tableInputProps() });
       const transducerInput = el('input', { type: 'text', value: channel.transducer, ...tableInputProps() });
-      const gaugeInput = el('input', { type: 'text', value: channel.gauge, ...tableInputProps() });
       const visibleCheckbox = el('input', { type: 'checkbox' });
       visibleCheckbox.checked = !!channel.visible;
+      const sosInput = el('input', { type: 'text', value: channel.start_of_stabilisation, ...tableInputProps() });
+      const sohInput = el('input', { type: 'text', value: channel.start_of_hold, ...tableInputProps() });
+      const eohInput = el('input', { type: 'text', value: channel.end_of_hold, ...tableInputProps() });
+      const btoInput = el('input', { type: 'text', value: channel.breakout_torque, ...tableInputProps() });
+      const rtoInput = el('input', { type: 'text', value: channel.running_torque, ...tableInputProps() });
 
       const tr = el('tr', {}, [
-        el('td', { textContent: channel.channel, style: 'padding:8px; border-bottom:1px solid #222;' }),
+        el('td', { style: 'padding:8px; border-bottom:1px solid #222;' }, [uniqueNumberInput]),
         el('td', { style: 'padding:8px; border-bottom:1px solid #222;' }, [transducerInput]),
-        el('td', { style: 'padding:8px; border-bottom:1px solid #222;' }, [gaugeInput]),
-        el('td', { style: 'padding:8px; border-bottom:1px solid #222; text-align:center;' }, [visibleCheckbox])
+        el('td', { style: 'padding:8px; border-bottom:1px solid #222; text-align:center;' }, [visibleCheckbox]),
+        el('td', { style: 'padding:8px; border-bottom:1px solid #222;' }, [sosInput]),
+        el('td', { style: 'padding:8px; border-bottom:1px solid #222;' }, [sohInput]),
+        el('td', { style: 'padding:8px; border-bottom:1px solid #222;' }, [eohInput]),
+        el('td', { style: 'padding:8px; border-bottom:1px solid #222;' }, [btoInput]),
+        el('td', { style: 'padding:8px; border-bottom:1px solid #222;' }, [rtoInput])
       ]);
       channelBody.appendChild(tr);
 
-      channelEditors.push({ channel: channel.channel, transducerInput, gaugeInput, visibleCheckbox });
+      channelEditors.push({
+        uniqueNumberInput,
+        transducerInput,
+        visibleCheckbox,
+        sosInput,
+        sohInput,
+        eohInput,
+        btoInput,
+        rtoInput
+      });
     });
 
     channelInfoForm.appendChild(channelTable);
     createSection('channel-info', 'Channel Info', channelInfoForm);
-
-    // -------- Mass Spec Timings --------
-    const massSpecTimingsForm = el('div');
-    const massSpecTable = el('table', { style: 'width: 100%; border-collapse: collapse;' });
-    const massSpecHeader = el('tr', {}, [
-      th('Label', '20%'),
-      th('Start'),
-      th('Stop')
-    ]);
-    const massSpecBody = el('tbody');
-    massSpecTable.append(massSpecHeader, massSpecBody);
-
-    details.mass_spec_timings.forEach(timing => {
-      const startInput = el('input', { type: 'text', value: timing.start, ...tableInputProps() });
-      const stopInput = el('input', { type: 'text', value: timing.stop, ...tableInputProps() });
-
-      const tr = el('tr', {}, [
-        el('td', { textContent: timing.label, style: 'padding:8px; border-bottom:1px solid #222;' }),
-        el('td', { style: 'padding:8px; border-bottom:1px solid #222;' }, [startInput]),
-        el('td', { style: 'padding:8px; border-bottom:1px solid #222;' }, [stopInput])
-      ]);
-      massSpecBody.appendChild(tr);
-
-      massSpecTimingEditors.push({ label: timing.label, startInput, stopInput });
-    });
-
-    massSpecTimingsForm.appendChild(massSpecTable);
-    createSection('mass-spec-timings', 'Mass Spec Timings', massSpecTimingsForm);
-
-    // -------- Holds --------
-    const holdsForm = el('div');
-    const holdsTable = el('table', { style: 'width: 100%; border-collapse: collapse;' });
-    const holdsHeader = el('tr', {}, [
-      th('Cycle Index', '1%'),
-      th('Channel'),
-      th('Start of Stabilisation'),
-      th('Start of Hold'),
-      th('End of Hold'),
-      th('Breakout Torque', '1%'),
-      th('Running Torque', '1%'),
-      th('', '1%')
-    ]);
-    const holdsBody = el('tbody');
-    holdsTable.append(holdsHeader, holdsBody);
-
-    const addHoldRow = (hold) => {
-      const cycleIndexInput = el('input', { type: 'number', value: hold.cycle_index, min: '0', step: '1', ...tableInputProps() });
-      const channelInput = el('input', { type: 'text', value: hold.channel, ...tableInputProps() });
-      const startOfStabilisationInput = el('input', { type: 'text', value: hold.start_of_stabilisation, ...tableInputProps() });
-      const startOfHoldInput = el('input', { type: 'text', value: hold.start_of_hold, ...tableInputProps() });
-      const endOfHoldInput = el('input', { type: 'text', value: hold.end_of_hold, ...tableInputProps() });
-      const breakoutTorqueInput = el('input', { type: 'text', value: hold.breakout_torque, ...tableInputProps() });
-      const runningTorqueInput = el('input', { type: 'text', value: hold.running_torque, ...tableInputProps() });
-
-      const deleteButton = el('button', {
-        textContent: 'Delete',
-        style: `
-          width: 100%;
-          padding: 8px 10px;
-          border-radius: 10px;
-          border: 1px solid #3a3a3a;
-          background: #2a2a2a;
-          color: #fff;
-          cursor: pointer;
-        `
-      });
-
-      const tr = el('tr', {}, [
-        el('td', { style: 'padding:8px; border-bottom:1px solid #222;' }, [cycleIndexInput]),
-        el('td', { style: 'padding:8px; border-bottom:1px solid #222;' }, [channelInput]),
-        el('td', { style: 'padding:8px; border-bottom:1px solid #222;' }, [startOfStabilisationInput]),
-        el('td', { style: 'padding:8px; border-bottom:1px solid #222;' }, [startOfHoldInput]),
-        el('td', { style: 'padding:8px; border-bottom:1px solid #222;' }, [endOfHoldInput]),
-        el('td', { style: 'padding:8px; border-bottom:1px solid #222;' }, [breakoutTorqueInput]),
-        el('td', { style: 'padding:8px; border-bottom:1px solid #222;' }, [runningTorqueInput]),
-        el('td', { style: 'padding:8px; border-bottom:1px solid #222;' }, [deleteButton])
-      ]);
-
-      holdsBody.appendChild(tr);
-
-      const editor = {
-        tr,
-        cycleIndexInput,
-        channelInput,
-        startOfStabilisationInput,
-        startOfHoldInput,
-        endOfHoldInput,
-        breakoutTorqueInput,
-        runningTorqueInput
-      };
-
-      deleteButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        holdsBody.removeChild(tr);
-        const idx = holdsEditors.indexOf(editor);
-        if (idx !== -1) holdsEditors.splice(idx, 1);
-      });
-
-      holdsEditors.push(editor);
-    };
-
-    (details.holds || []).forEach(addHoldRow);
-
-    const addHoldButton = el('button', {
-      textContent: 'Add Hold Row',
-      style: `
-        margin-top: 10px;
-        width: 100%;
-        padding: 10px 12px;
-        border-radius: 12px;
-        border: 1px solid #3a3a3a;
-        background: #2a2a2a;
-        color: #fff;
-        cursor: pointer;
-      `
-    });
-
-    let nextHoldIndex = Math.max(0, ...(details.holds || []).map(h => Number(h.cycle_index) || 0)) + 1;
-    addHoldButton.addEventListener('click', (e) => {
-      e.preventDefault();
-      addHoldRow({
-        cycle_index: nextHoldIndex++,
-        channel: '',
-        start_of_stabilisation: '',
-        start_of_hold: '',
-        end_of_hold: '',
-        breakout_torque: '',
-        running_torque: ''
-      });
-    });
-
-    holdsForm.append(holdsTable, addHoldButton);
-    createSection('holds', 'Holds', holdsForm);
-
-    // -------- Cycles --------
-    const cyclesForm = el('div');
-    const cyclesTable = el('table', { style: 'width: 100%; border-collapse: collapse;' });
-    const cyclesHeader = el('tr', {}, [
-      th('Cycle Index', '1%'),
-      th('BTO'),
-      th('BTC'),
-      th('', '1%')
-    ]);
-    const cyclesBody = el('tbody');
-    cyclesTable.append(cyclesHeader, cyclesBody);
-
-    const addCycleRow = (cycle) => {
-      const cycleIndexInput = el('input', { type: 'number', value: cycle.cycle_index, min: '0', step: '1', ...tableInputProps() });
-      const btoInput = el('input', { type: 'text', value: cycle.bto, ...tableInputProps() });
-      const btcInput = el('input', { type: 'text', value: cycle.btc, ...tableInputProps() });
-
-      const deleteButton = el('button', {
-        textContent: 'Delete',
-        style: `
-          width: 100%;
-          padding: 8px 10px;
-          border-radius: 10px;
-          border: 1px solid #3a3a3a;
-          background: #2a2a2a;
-          color: #fff;
-          cursor: pointer;
-        `
-      });
-
-      const tr = el('tr', {}, [
-        el('td', { style: 'padding:8px; border-bottom:1px solid #222;' }, [cycleIndexInput]),
-        el('td', { style: 'padding:8px; border-bottom:1px solid #222;' }, [btoInput]),
-        el('td', { style: 'padding:8px; border-bottom:1px solid #222;' }, [btcInput]),
-        el('td', { style: 'padding:8px; border-bottom:1px solid #222;' }, [deleteButton])
-      ]);
-
-      cyclesBody.appendChild(tr);
-
-      const editor = { tr, cycleIndexInput, btoInput, btcInput };
-
-      deleteButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        cyclesBody.removeChild(tr);
-        const idx = cyclesEditors.indexOf(editor);
-        if (idx !== -1) cyclesEditors.splice(idx, 1);
-      });
-
-      cyclesEditors.push(editor);
-    };
-
-    (details.cycles || []).forEach(addCycleRow);
-
-    const addCycleButton = el('button', {
-      textContent: 'Add Cycle Row',
-      style: `
-        margin-top: 10px;
-        width: 100%;
-        padding: 10px 12px;
-        border-radius: 12px;
-        border: 1px solid #3a3a3a;
-        background: #2a2a2a;
-        color: #fff;
-        cursor: pointer;
-      `
-    });
-
-    let nextCycleRowIndex = Math.max(0, ...(details.cycles || []).map(c => Number(c.cycle_index) || 0)) + 1;
-    addCycleButton.addEventListener('click', (e) => {
-      e.preventDefault();
-      addCycleRow({ cycle_index: nextCycleRowIndex++, bto: '', btc: '' });
-    });
-
-    cyclesForm.append(cyclesTable, addCycleButton);
-    createSection('cycles', 'Cycles', cyclesForm);
-
-    // -------- Calibration --------
-    const calibrationForm = el('div');
-
-    const createVerticalField = (label, value) => {
-      const wrapper = el('div', { style: 'display: flex; flex-direction: column; gap: 6px;' });
-      const lbl = el('label', { textContent: label, style: 'font-weight: 600; color:#ccc; font-size:0.9rem;' });
-      const inp = el('input', { type: 'text', value: value ?? '', ...tableInputProps() });
-      wrapper.append(lbl, inp);
-      return { wrapper, inp };
-    };
-
-    const gridContainer = el('div', {
-      style: 'display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;'
-    });
-
-    const cal = details.calibration || { channel_name: '', channel_index: '', max_range: '', key_points: [] };
-    const nameField = createVerticalField('Channel Name', cal.channel_name);
-    const indexField = createVerticalField('Channel Index', cal.channel_index);
-    const rangeField = createVerticalField('Max Range', cal.max_range);
-
-    gridContainer.append(nameField.wrapper, indexField.wrapper, rangeField.wrapper);
-
-    const keyPointsHeader = el('h3', { textContent: 'Key Points', style: 'margin: 16px 0 10px;' });
-    const keyPointsContainer = el('div', { style: 'display: flex; flex-wrap: wrap; gap: 12px;' });
-
-    const keyPointsInputs = [];
-    (cal.key_points || []).forEach(point => {
-      const input = el('input', { type: 'text', value: point ?? '', ...tableInputProps() });
-      input.style.flex = '1';
-      input.style.minWidth = '120px';
-      keyPointsContainer.appendChild(input);
-      keyPointsInputs.push(input);
-    });
-
-    calibrationForm.append(gridContainer, keyPointsHeader, keyPointsContainer);
-
-    calibrationEditor = {
-      channelNameInput: nameField.inp,
-      channelIndexInput: indexField.inp,
-      maxRangeInput: rangeField.inp,
-      keyPointsInputs
-    };
-
-    createSection('calibration', 'Calibration', calibrationForm);
 
     // show first section by default
     if (allContentSections.length) {
@@ -602,48 +362,17 @@
       detailsJson.channel_info.forEach((channel, i) => {
         const editor = channelEditors[i];
         if (editor) {
+          channel.unique_number = editor.uniqueNumberInput.value;
           channel.transducer = editor.transducerInput.value;
-          channel.gauge = editor.gaugeInput.value;
           channel.visible = editor.visibleCheckbox.checked;
+          channel.start_of_stabilisation = editor.sosInput.value;
+          channel.start_of_hold = editor.sohInput.value;
+          channel.end_of_hold = editor.eohInput.value;
+          channel.breakout_torque = editor.btoInput.value;
+          channel.running_torque = editor.rtoInput.value;
         }
       });
     }
-
-    // Mass Spec Timings
-    if (Array.isArray(detailsJson.mass_spec_timings)) {
-      detailsJson.mass_spec_timings.forEach((timing, i) => {
-        const editor = massSpecTimingEditors[i];
-        if (editor) {
-          timing.start = editor.startInput.value;
-          timing.stop = editor.stopInput.value;
-        }
-      });
-    }
-
-    // Holds
-    detailsJson.holds = holdsEditors.map(editor => ({
-      cycle_index: editor.cycleIndexInput.value,
-      channel: editor.channelInput.value,
-      start_of_stabilisation: editor.startOfStabilisationInput.value,
-      start_of_hold: editor.startOfHoldInput.value,
-      end_of_hold: editor.endOfHoldInput.value,
-      breakout_torque: editor.breakoutTorqueInput.value,
-      running_torque: editor.runningTorqueInput.value,
-    }));
-
-    // Cycles
-    detailsJson.cycles = cyclesEditors.map(editor => ({
-      cycle_index: editor.cycleIndexInput.value,
-      bto: editor.btoInput.value,
-      btc: editor.btcInput.value,
-    }));
-
-    // Calibration
-    detailsJson.calibration = detailsJson.calibration || {};
-    detailsJson.calibration.channel_name = calibrationEditor.channelNameInput?.value ?? '';
-    detailsJson.calibration.channel_index = calibrationEditor.channelIndexInput?.value ?? '';
-    detailsJson.calibration.max_range = calibrationEditor.maxRangeInput?.value ?? '';
-    detailsJson.calibration.key_points = (calibrationEditor.keyPointsInputs || []).map(input => input.value);
   }
 
   // =========================

@@ -1,0 +1,57 @@
+{
+"metadata": {
+"OTS Number": "",
+"Drawing Number": "",
+"Client": "",
+"Line Item": "",
+"User": "",
+"Test Name": "",
+"Test Pressure": "0",
+"Data Logger": "",
+"Serial Number": "",
+"Date Time": "2026-01-21T145537.940",
+"Program Name": "1"
+},
+"channel_info": [
+  {
+    "unique_number": "1",
+    "transducer": "",
+    "visible": true,
+    "start_of_stabilisation": "2026-01-21T14:54:36.640",
+    "start_of_hold": "2026-01-21T14:55:37.039",
+    "end_of_hold": "2026-01-21T14:55:37.339",
+    "breakout_torque": 0,
+    "running_torque": 0
+  },
+  {
+    "unique_number": "",
+    "transducer": "",
+    "visible": false,
+    "start_of_stabilisation": "",
+    "start_of_hold": "",
+    "end_of_hold": "",
+    "breakout_torque": 0,
+    "running_torque": 0
+  },
+  {
+    "unique_number": "",
+    "transducer": "",
+    "visible": false,
+    "start_of_stabilisation": "",
+    "start_of_hold": "",
+    "end_of_hold": "",
+    "breakout_torque": 0,
+    "running_torque": 0
+  },
+  {
+    "unique_number": "",
+    "transducer": "",
+    "visible": false,
+    "start_of_stabilisation": "",
+    "start_of_hold": "",
+    "end_of_hold": "",
+    "breakout_torque": 0,
+    "running_torque": 0
+  }
+]
+}
