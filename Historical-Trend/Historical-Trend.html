@@ -208,29 +208,20 @@
             display: none !important;
         }
 
-        /* Cursor Handles */
+        /* Cursor Interaction Area */
         .measurement-handle-layer {
           position: absolute;
           inset: 0;
           pointer-events: none;
           z-index: 18;
         }
-        .measurement-handle {
+        .measurement-hit-area {
           position: absolute;
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          background: var(--cursor-color, #fff);
-          border: 2px solid #000;
-          box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-          transform: translate(-9999px, -9999px);
+          width: 10px;
+          background: rgba(255, 255, 255, 0); /* Invisible but captures events */
           pointer-events: auto;
-          cursor: grab;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          cursor: ew-resize;
         }
-        .measurement-handle.is-dragging { cursor: grabbing; }
     </style>
 </head>
 
@@ -293,7 +284,6 @@
 
     const PRESSURE_COLORS = ['#FF0000', '#00B050', '#FF8C00', '#FFD700', '#8A2BE2', '#00CED1', '#FF00FF', '#ADFF2F'];
     const AMBIENT_TEMP_COLOR = '#0000FF';
-    const MEASUREMENT_HANDLE_COLORS = ['#ffffff', '#ffffff'];
 
     let dataFile = null;
     let channelInfo = [];
@@ -524,7 +514,7 @@
         }));
         Plotly.relayout(chartDiv, { shapes });
         updateMeasurementOverlay();
-        updateMeasurementHandles();
+        updateMeasurementHitAreas();
     }
 
     function updateMeasurementOverlay() {
@@ -579,11 +569,10 @@
         measurementHandleLayer.className = 'measurement-handle-layer';
         measurementHandleElements = [0, 1].map(i => {
             const h = document.createElement('div');
-            h.className = 'measurement-handle';
+            h.className = 'measurement-hit-area';
             h.addEventListener('pointerdown', e => {
                 measurementHandleDrag = { i, pointerId: e.pointerId };
                 h.setPointerCapture(e.pointerId);
-                h.classList.add('is-dragging');
             });
             h.addEventListener('pointermove', e => {
                 if (measurementHandleDrag?.i !== i) return;
@@ -600,7 +589,7 @@
 
                 measurementCursors[i] = value;
                 updateMeasurementOverlay();
-                updateMeasurementHandles();
+                updateMeasurementHitAreas();
 
                 // Update the chart shape in real-time
                 const payload = {};
@@ -611,7 +600,6 @@
             });
             h.addEventListener('pointerup', () => {
                 measurementHandleDrag = null;
-                h.classList.remove('is-dragging');
                 syncMeasurementShapes();
             });
             measurementHandleLayer.appendChild(h);
@@ -625,18 +613,18 @@
         measurementHandleLayer = null;
     }
 
-    function updateMeasurementHandles() {
+    function updateMeasurementHitAreas() {
         if (!chartDiv._fullLayout || !measurementHandleElements.length) return;
         const fullLayout = chartDiv._fullLayout;
         const xa = fullLayout.xaxis;
-        const plotBottom = fullLayout._size.t + fullLayout._size.h;
+        const ya = fullLayout.yaxis;
 
         measurementCursors.forEach((val, i) => {
-            // Use Plotly's internal linear-to-pixel conversion for the x-axis
             const x = xa._offset + xa.l2p(val);
-            // Align bottom of 24px circle with the x-axis line
-            const y = plotBottom - 24;
-            measurementHandleElements[i].style.transform = `translate(${x - 12}px, ${y}px)`;
+            const el = measurementHandleElements[i];
+            el.style.left = `${x - 5}px`;
+            el.style.top = `${ya._offset}px`;
+            el.style.height = `${ya._length}px`;
         });
     }
 
@@ -647,7 +635,7 @@
 
     function onPlotRelayout(e) {
         if (measurementModeActive) {
-            updateMeasurementHandles();
+            updateMeasurementHitAreas();
         }
     }
 
