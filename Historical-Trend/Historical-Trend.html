@@ -53,7 +53,7 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
-            padding-top: 30px; /* Align with Plotly grid top (margin.t=30) */
+            padding-top: 0;
             box-sizing: border-box;
             height: 100%;
             z-index: 20;
@@ -203,7 +203,8 @@
         .hoverlayer .hovertext,
         .hoverlayer .axistext,
         .hoverlayer .hovercursor,
-        .hoverlayer path {
+        .hoverlayer path,
+        .hoverlayer rect {
             display: none !important;
         }
 
@@ -397,12 +398,14 @@
         });
 
         const layout = {
-            margin: { l: 80, r: 40, b: 60, t: 30 },
+            margin: { l: 0, r: 0, b: 0, t: 0 },
             plot_bgcolor: '#111',
             paper_bgcolor: '#000',
             showlegend: false,
             hovermode: 'x unified',
+            hoverlabel: { bgcolor: 'rgba(0,0,0,0)', bordercolor: 'rgba(0,0,0,0)' },
             xaxis: {
+                automargin: true,
                 gridcolor: '#333',
                 tickfont: { color: '#fff' },
                 showspikes: true,
@@ -413,6 +416,7 @@
                 spikesnap: 'cursor'
             },
             yaxis: {
+                automargin: true,
                 title: { text: 'Pressure (psi)', font: { color: '#fff' } },
                 gridcolor: '#333',
                 tickfont: { color: '#fff' }
@@ -630,11 +634,10 @@
     function updateMeasurementHandles() {
         const range = getCurrentXRange();
         if (!range || !measurementHandleElements.length) return;
-        const rect = chartDiv.getBoundingClientRect();
         const fullLayout = chartDiv._fullLayout;
-        const plotLeft = rect.left + fullLayout._size.l;
+        const plotLeft = fullLayout._size.l;
         const plotWidth = fullLayout._size.w;
-        const bottom = rect.top + fullLayout._size.t + fullLayout._size.h - 40;
+        const bottom = fullLayout._size.t + fullLayout._size.h - 40;
 
         measurementCursors.forEach((val, i) => {
             const ratio = (val - range[0]) / (range[1] - range[0]);
