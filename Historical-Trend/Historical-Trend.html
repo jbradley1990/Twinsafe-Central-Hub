@@ -431,15 +431,27 @@
         if (!target) return;
 
         phTime.textContent = target.toLocaleString(undefined, { hour12: false });
-        const rows = chartDiv.data.map((trace, i) => {
-            const val = sampleTraceValueAt(i, target);
-            const shown = trace.visible !== 'legendonly';
-            const unit = channelInfo[i].isTemp ? '°C' : 'psi';
+
+        const items = chartDiv.data.map((trace, i) => ({
+            trace,
+            index: i,
+            shown: trace.visible !== 'legendonly'
+        }));
+
+        // Sort: active first, then by original index
+        items.sort((a, b) => {
+            if (a.shown !== b.shown) return a.shown ? -1 : 1;
+            return a.index - b.index;
+        });
+
+        const rows = items.map(({ trace, index, shown }) => {
+            const val = sampleTraceValueAt(index, target);
+            const unit = channelInfo[index].isTemp ? '°C' : 'psi';
             return `
-                <div class="ph-row ${shown ? '' : 'is-hidden'}" data-index="${i}">
+                <div class="ph-row ${shown ? '' : 'is-hidden'}" data-index="${index}">
                     <div class="ph-label">
                         <span style="width:24px; border-top:3px ${trace.line.dash === 'dot' ? 'dotted' : 'solid'} ${trace.line.color};"></span>
-                        ${escapeHTML(channelNames[i])}
+                        ${escapeHTML(channelNames[index])}
                     </div>
                     <div class="ph-value">${val !== null ? val.toFixed(1) : '—'} <span style="font-size:0.8rem; opacity:0.6;">${unit}</span></div>
                 </div>
