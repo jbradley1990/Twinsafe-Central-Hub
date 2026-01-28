@@ -142,7 +142,7 @@ def run_pdf_generation():
             before = {p.name for p in out_dir.glob("*.pdf")}
 
             # Use the current interpreter (portable on Windows/macOS/Linux)
-            cmd = [sys.executable, "R-D-AutoChart-Generation/DLS Chart Generation/main.py", str(data_path), str(details_path), str(out_dir)]
+            cmd = [sys.executable, "chart_generation/main.py", str(data_path), str(details_path), str(out_dir)]
             current_app.logger.info("Running: %s", " ".join(cmd))
 
             proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
