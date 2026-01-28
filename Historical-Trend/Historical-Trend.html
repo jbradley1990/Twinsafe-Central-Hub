@@ -434,7 +434,15 @@ body{
    INITIALISE NAV BAR
 --------------------------------------------------------- */
 document.addEventListener("DOMContentLoaded", () => {
-  initNavigationBar();
+  initNavigationBar({
+    title: "Historical Trend",
+    pages: [
+      { label: "Rig Overview", href: "../Rig-Overview/Rig-Overview.html" },
+      { label: "Getting Started", href: "../Getting-Started/Getting-Started.html" },
+      { label: "PDF Chart Generation", href: "../PDF-Chart-Generation/PDF-Chart-Generation.html" },
+      { label: "Historical Trend", href: "../Historical-Trend/Historical-Trend.html" }
+    ]
+  });
 });
 </script>
 
