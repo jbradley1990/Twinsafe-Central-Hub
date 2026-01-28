@@ -342,7 +342,10 @@ body{
         html, body { overflow: hidden; }
 
         /* Hide the on-chart hover labels */
-        .hoverlayer {
+        .hoverlayer .hovertext,
+        .hoverlayer .axistext,
+        .hoverlayer .hovercursor,
+        .hoverlayer path {
             display: none !important;
         }
 </style>
@@ -634,8 +637,13 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             const layout = {
-                hoverlabel: { namelength: -1 },
-                xaxis: { title: { text: 'Time', font: { color: '#fff' } }, tickfont: { color: '#fff' }, gridcolor: '#444', showspikes: true, spikecolor: '#fff', spikedash: 'dot', spikethickness: 1, spikesnap: 'cursor', spikemode: 'across' },
+                hoverlabel: {
+                    namelength: -1,
+                    bgcolor: 'rgba(0,0,0,0)',
+                    bordercolor: 'rgba(0,0,0,0)',
+                    font: { color: 'rgba(0,0,0,0)' }
+                },
+                xaxis: { title: { text: 'Time', font: { color: '#fff' } }, tickfont: { color: '#fff' }, gridcolor: '#444', showspikes: true, spikecolor: '#fff', spikedash: 'dash', spikethickness: 2, spikesnap: 'cursor', spikemode: 'across' },
                 hovermode: 'x unified',
                 margin: { l: 80, r: 40, b: 80, t: 30 },
                 plot_bgcolor: '#222',
@@ -776,7 +784,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const valueStr = formatHoverValue(value);
                 const unit = info ? (info.isTemp ? '°C' : 'psi') : '';
                 const strokeColor = shown ? color : '#6b7280';
-                const unitSpan = unit ? `<span style="font-size:0.85rem; opacity:0.75;">${unit}</span>` : '';
+                const unitSpan = unit ? `<span style="font-size:0.85rem; opacity:0.75;">${escapeHTML(unit)}</span>` : '';
 
                 const html = `
                     <div class="ph-row ${shown ? '' : 'is-hidden'}" data-index="${index}">
@@ -786,11 +794,11 @@ document.addEventListener("DOMContentLoaded", () => {
                                     border-top:4px ${isDotted ? 'dotted' : 'solid'} ${strokeColor};
                                     flex-shrink:0;"></span>
                             <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                                ${name}
+                                ${escapeHTML(name)}
                             </span>
                         </div>
                         <div class="ph-value">
-                            <span data-role="val">${valueStr}</span>
+                            <span data-role="val">${escapeHTML(valueStr)}</span>
                             ${unitSpan}
                         </div>
                     </div>
@@ -813,7 +821,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             return `
                 <div class="rd-key-time">
-                    <span style="font-size:1.25rem;font-weight:400;letter-spacing:0.01em;">${timeText}</span>
+                    <span style="font-size:1.25rem;font-weight:400;letter-spacing:0.01em;">${escapeHTML(timeText)}</span>
                 </div>
                 <div style="height: 10px;"></div>
                 <div class="ph-rows">
@@ -1300,9 +1308,9 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!sections) return;
             rememberMeasurementRowsScrollState();
             sections.meta.innerHTML = `
-                <div><span>A:</span> ${formatCursorTime(startDate)}</div>
-                <div><span>B:</span> ${formatCursorTime(endDate)}</div>
-                <div><span>Δt:</span> ${formatDuration(deltaMs)}</div>
+                <div><span>A:</span> ${escapeHTML(formatCursorTime(startDate))}</div>
+                <div><span>B:</span> ${escapeHTML(formatCursorTime(endDate))}</div>
+                <div><span>Δt:</span> ${escapeHTML(formatDuration(deltaMs))}</div>
             `;
             const rowsHtml = buildMeasurementRows(startMs, endMs);
             sections.rows.innerHTML = rowsHtml;
@@ -1326,13 +1334,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="measurement-row">
                         <div class="measurement-row-title">
                             <span style="background:${color};"></span>
-                            <div>${name}</div>
+                            <div>${escapeHTML(name)}</div>
                         </div>
                         <div class="measurement-stats">
-                            <div class="measurement-stat"><div class="measurement-stat-label">Avg</div><div>${formatMeasurementNumber(stats.average)}${unitText}</div></div>
-                            <div class="measurement-stat"><div class="measurement-stat-label">Δ</div><div>${formatMeasurementNumber(stats.delta)}${unitText}</div></div>
-                            <div class="measurement-stat"><div class="measurement-stat-label">Min</div><div>${formatMeasurementNumber(stats.min)}${unitText}</div></div>
-                            <div class="measurement-stat"><div class="measurement-stat-label">Max</div><div>${formatMeasurementNumber(stats.max)}${unitText}</div></div>
+                            <div class="measurement-stat"><div class="measurement-stat-label">Avg</div><div>${escapeHTML(formatMeasurementNumber(stats.average))}${escapeHTML(unitText)}</div></div>
+                            <div class="measurement-stat"><div class="measurement-stat-label">Δ</div><div>${escapeHTML(formatMeasurementNumber(stats.delta))}${escapeHTML(unitText)}</div></div>
+                            <div class="measurement-stat"><div class="measurement-stat-label">Min</div><div>${escapeHTML(formatMeasurementNumber(stats.min))}${escapeHTML(unitText)}</div></div>
+                            <div class="measurement-stat"><div class="measurement-stat-label">Max</div><div>${escapeHTML(formatMeasurementNumber(stats.max))}${escapeHTML(unitText)}</div></div>
                         </div>
                     </div>
                 `);
@@ -1473,11 +1481,18 @@ document.addEventListener("DOMContentLoaded", () => {
             const sections = ensureMeasurementOverlaySections();
             if (!sections) return;
             sections.meta.innerHTML = '';
-            sections.rows.innerHTML = `<div class="measurement-empty">${message}</div>`;
+            sections.rows.innerHTML = `<div class="measurement-empty">${escapeHTML(message)}</div>`;
             sections.rows.scrollTop = 0;
             measurementRowsScrollTop = 0;
             measurementRowsScrollHeight = sections.rows.scrollHeight;
             measurementRowsClientHeight = sections.rows.clientHeight;
+        }
+
+        function escapeHTML(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
         }
     </script>
 
