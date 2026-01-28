@@ -4,7 +4,7 @@
   // DEFAULT CONFIG FOR YOUR PROJECT
   // ------------------------------
   const DEFAULT_CONFIG = {
-    title: 'DLS Information Centre',
+    //title: 'DLS Information Centre',
     pages: [
       { label: 'Rig Overview', href: '/rig-overview' },
       { label: 'Getting Started', href: '/getting-started' },
