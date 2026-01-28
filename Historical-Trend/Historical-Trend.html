@@ -230,16 +230,6 @@
           align-items: center;
           justify-content: center;
         }
-        .measurement-handle::after {
-          content: '';
-          position: absolute;
-          top: -20px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 2px;
-          height: 18px;
-          background: var(--cursor-color, #fff);
-        }
         .measurement-handle.is-dragging { cursor: grabbing; }
     </style>
 </head>
@@ -597,13 +587,17 @@
             });
             h.addEventListener('pointermove', e => {
                 if (measurementHandleDrag?.i !== i) return;
-                const rect = chartDiv.getBoundingClientRect();
                 const fullLayout = chartDiv._fullLayout;
-                const plotLeft = rect.left + fullLayout._size.l;
-                const plotWidth = fullLayout._size.w;
-                const ratio = Math.max(0, Math.min(1, (e.clientX - plotLeft) / plotWidth));
-                const range = getCurrentXRange();
-                const value = range[0] + ratio * (range[1] - range[0]);
+                const xa = fullLayout.xaxis;
+                const rect = chartDiv.getBoundingClientRect();
+                const localX = e.clientX - rect.left - xa._offset;
+                let value = xa.p2l(localX);
+
+                // Clamp to current view range
+                const r0 = new Date(xa.range[0]).getTime();
+                const r1 = new Date(xa.range[1]).getTime();
+                value = Math.max(Math.min(r0, r1), Math.min(Math.max(r0, r1), value));
+
                 measurementCursors[i] = value;
                 updateMeasurementOverlay();
                 updateMeasurementHandles();
@@ -632,17 +626,17 @@
     }
 
     function updateMeasurementHandles() {
-        const range = getCurrentXRange();
-        if (!range || !measurementHandleElements.length) return;
+        if (!chartDiv._fullLayout || !measurementHandleElements.length) return;
         const fullLayout = chartDiv._fullLayout;
-        const plotLeft = fullLayout._size.l;
-        const plotWidth = fullLayout._size.w;
-        const bottom = fullLayout._size.t + fullLayout._size.h - 40;
+        const xa = fullLayout.xaxis;
+        const plotBottom = fullLayout._size.t + fullLayout._size.h;
 
         measurementCursors.forEach((val, i) => {
-            const ratio = (val - range[0]) / (range[1] - range[0]);
-            const x = plotLeft + ratio * plotWidth;
-            measurementHandleElements[i].style.transform = `translate(${x - 12}px, ${bottom}px)`;
+            // Use Plotly's internal linear-to-pixel conversion for the x-axis
+            const x = xa._offset + xa.l2p(val);
+            // Align bottom of 24px circle with the x-axis line
+            const y = plotBottom - 24;
+            measurementHandleElements[i].style.transform = `translate(${x - 12}px, ${y}px)`;
         });
     }
 
