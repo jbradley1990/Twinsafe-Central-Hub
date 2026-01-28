@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Rig Overview</title>
 
 <!-- NAV BAR SCRIPT -->
@@ -36,7 +37,7 @@ body{
    PAGE CONTAINER
 --------------------------------------------------------- */
 .page-wrap{
-  padding:110px 40px 40px;   /* room for navbar */
+  padding:60px 40px 40px;   /* reduced from 110px for better tablet/mobile fit */
   max-width:1600px;
   margin:auto;
 }
@@ -109,6 +110,40 @@ body{
 
 .rig-card.offline:hover{
   background:#3a3a00;
+}
+
+/* ---------------------------------------------------------
+   RESPONSIVE DESIGN FOR TABLETS AND MOBILE
+--------------------------------------------------------- */
+@media (max-width: 1024px) {
+  /* Tablet adjustments */
+  .page-wrap{
+    padding: 80px 30px 30px;  /* Reduced top padding for tablets */
+  }
+  
+  .rig-grid{
+    gap: 20px;
+  }
+  
+  .rig-card{
+    padding: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Mobile/Small tablet adjustments */
+  .page-wrap{
+    padding: 70px 20px 20px;  /* Even less top padding */
+  }
+  
+  .rig-grid{
+    grid-template-columns: 1fr;  /* Single column on small screens */
+    gap: 15px;
+  }
+  
+  .rig-card h2{
+    font-size: 1.4rem;
+  }
 }
 
 </style>
