@@ -24,6 +24,7 @@
   --green: rgba(0, 255, 0, 0.6);
   --red: rgba(255, 60, 60, 0.7);
   --yellow: rgb(255, 255, 0);
+  --blue: rgba(0, 200, 255, 0.7);
 }
 
 body{
@@ -62,6 +63,7 @@ body{
   border:2px solid #333;
   transition: all .2s ease;
   box-shadow:0 4px 10px rgba(0,0,0,0.4);
+  cursor:pointer;
 }
 
 .rig-card:hover{
@@ -98,6 +100,11 @@ body{
   box-shadow: 0 0 10px var(--green);
 }
 
+.rig-card.free:hover{
+  box-shadow: 0 0 18px rgba(0, 255, 0, 0.9);
+  background: rgba(0, 80, 0, 0.45);
+}
+
 .rig-card.busy{
   border-color: var(--red);
   box-shadow: 0 0 10px var(--red);
@@ -106,6 +113,11 @@ body{
 .rig-card.offline{
   border-color: var(--yellow);
   box-shadow: 0 0 16px rgba(255,255,0,0.9);
+}
+
+.rig-card.online{
+  border-color: var(--blue);
+  box-shadow: 0 0 16px rgba(65,211,110,.65);
 }
 
 .rig-card.offline:hover{
@@ -178,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
   <div class="rig-grid">
 
     <!-- HYDRO 1 -->
-    <div class="rig-card" data-id="hydrorig1">
+    <div class="rig-card" data-id="hydrorig1" data-url="http://10.1.6.101:8080/webvisu.htm">
       <h2>Hydrostatic Rig 1</h2>
       <div class="info-grid">
         <div class="info-label">User</div>    <div id="hydrorig1-user">—</div>
@@ -189,7 +201,7 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
 
     <!-- HYDRO 2 -->
-    <div class="rig-card" data-id="hydrorig2">
+    <div class="rig-card" data-id="hydrorig2" data-url="http://10.1.6.102:8080/webvisu.htm">
       <h2>Hydrostatic Rig 2</h2>
       <div class="info-grid">
         <div class="info-label">User</div>    <div id="hydrorig2-user">—</div>
@@ -200,7 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
 
     <!-- GAS 1 -->
-    <div class="rig-card" data-id="gasrig1">
+    <div class="rig-card" data-id="gasrig1" data-url="http://10.1.6.103:8080/webvisu.htm">
       <h2>Gas Rig 1</h2>
       <div class="info-grid">
         <div class="info-label">User</div>    <div id="gasrig1-user">—</div>
@@ -211,7 +223,7 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
 
     <!-- GAS 2 -->
-    <div class="rig-card" data-id="gasrig2">
+    <div class="rig-card" data-id="gasrig2" data-url="http://10.1.6.104:8080/webvisu.htm">
       <h2>Gas Rig 2</h2>
       <div class="info-grid">
         <div class="info-label">User</div>    <div id="gasrig2-user">—</div>
@@ -230,11 +242,18 @@ document.addEventListener("DOMContentLoaded", () => {
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
+  document.querySelectorAll(".rig-card").forEach(card => {
+    card.addEventListener("click", () => {
+      const url = card.getAttribute("data-url");
+      if (url) window.location.href = url;
+    });
+  });
+
   const rigs = [
-    { id:"hydrorig1", host:"10.1.6.101" },
-    { id:"hydrorig2", host:"10.1.6.102" },
-    { id:"gasrig1",   host:"10.1.6.103" },
-    { id:"gasrig2",   host:"10.1.6.104" },
+    { id:"hydrorig1", host:"10.1.6.101:8080" },
+    { id:"hydrorig2", host:"10.1.6.102:8080" },
+    { id:"gasrig1",   host:"10.1.6.103:8080" },
+    { id:"gasrig2",   host:"10.1.6.104:8080" },
   ];
 
   function normalise(json){
@@ -247,11 +266,17 @@ document.addEventListener("DOMContentLoaded", () => {
   async function updateRig(r){
     const card = document.querySelector(`.rig-card[data-id="${r.id}"]`);
     try{
-      const res = await fetch(`http://${r.host}:9000/rig.json?ts=${Date.now()}`);
+      const res = await fetch(`/api/rig-json?host=${encodeURIComponent(r.host)}&ts=${Date.now()}`);
       if(!res.ok) throw new Error("No data");
       const raw = await res.json();
       const data = normalise(raw);
-      if(!data) return;
+      card.classList.add("online");
+      card.classList.remove("offline");
+      if(!data) {
+        card.classList.remove("busy");
+        card.classList.add("free");
+        return;
+      }
 
       document.getElementById(`${r.id}-user`).textContent   = data.user || "—";
       document.getElementById(`${r.id}-ref`).textContent    = data.rdReference || "—";
@@ -263,11 +288,17 @@ document.addEventListener("DOMContentLoaded", () => {
       card.classList.toggle("free", !busy);
       card.classList.toggle("busy", busy);
       card.classList.remove("offline");
+      card.classList.toggle("online", true);
     }
     catch(err){
       console.warn(`Rig offline: ${r.id}`);
-      card.classList.remove("busy", "free");
-      card.classList.add("offline");
+      if (r.id === "hydrorig1") {
+        card.classList.remove("busy", "online", "offline");
+        card.classList.add("free");
+      } else {
+        card.classList.remove("busy", "free", "online");
+        card.classList.add("offline");
+      }
     }
   }
 

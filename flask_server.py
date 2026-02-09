@@ -4,7 +4,9 @@ try:
 except Exception:  # pragma: no cover - dependency might be missing
     CORS = lambda *args, **kwargs: None
 from pathlib import Path
-import tempfile, subprocess, traceback, sys, io, os, time
+import tempfile, subprocess, traceback, sys, io, os, time, json
+from urllib.request import Request, urlopen
+from urllib.error import URLError, HTTPError
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -75,6 +77,41 @@ def ping():
 def add_cors_headers(resp):
     resp.headers.setdefault("Access-Control-Allow-Origin", "*")
     return resp
+
+@app.get("/api/rig-json")
+def rig_json_proxy():
+    host = (request.args.get("host") or "").strip()
+    path = (request.args.get("path") or "/rig.json").strip()
+
+    if not host:
+        return jsonify(error="host is required"), 400
+
+    if not path.startswith("/"):
+        path = "/" + path
+
+    if host.startswith("http://") or host.startswith("https://"):
+        base = host
+    else:
+        base = f"http://{host}"
+
+    url = f"{base}{path}"
+
+    try:
+        req = Request(url, headers={"Accept": "application/json"})
+        with urlopen(req, timeout=3.5) as resp:
+            raw = resp.read()
+            try:
+                parsed = json.loads(raw)
+                return jsonify(parsed)
+            except Exception:
+                return current_app.response_class(
+                    raw,
+                    mimetype=resp.headers.get("Content-Type", "application/json"),
+                )
+    except HTTPError as e:
+        return jsonify(error=f"Upstream error {e.code}"), 502
+    except URLError as e:
+        return jsonify(error=f"Upstream unreachable: {e.reason}"), 502
 
 # # ---- caching headers for guide assets ----
 # @app.after_request
