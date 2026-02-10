@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Getting Started</title>
+  <script src="../assets/tailwind.js"></script>
+  <link rel="stylesheet" href="../styles/main.css" />
+  <style>
+    .gs-sidebar a.active { background: var(--color-bg-tertiary); border-color: var(--color-border-light); }
+    .guide-section { display: none; }
+    .guide-section.active { display: block; }
+    .toggle::before { content: "▸"; }
+    .open > div > .toggle::before { content: "▾"; }
+    ul.tree-sub { display: none; }
+    .open > ul.tree-sub { display: block; }
+  </style>
+</head>
+<body class="body-styles flex flex-col h-screen">
+  <nav class="flex items-center justify-between px-6 py-3 bg-neutral-900 border-b border-neutral-800 shadow-md">
+    <div class="flex items-center gap-6">
+      <img src="../assets/Green Oliver V.png" alt="Logo" class="h-8 cursor-pointer" onclick="location.href='rig-overview.html'">
+      <div class="flex gap-4">
+        <a href="rig-overview.html" class="text-gray-400 font-medium hover:text-white transition-colors">Rig Overview</a>
+        <a href="getting-started.html" class="text-white font-medium hover:text-gray-300">Getting Started</a>
+        <a href="pdf-chart-generation.html" class="text-gray-400 font-medium hover:text-white transition-colors">PDF Generation</a>
+        <a href="historical-trend.html" class="text-gray-400 font-medium hover:text-white transition-colors">Historical Trend</a>
+      </div>
+    </div>
+    <div class="flex flex-col items-end">
+      <div id="nav-time" class="text-lg font-bold leading-none">00:00:00</div>
+      <div id="nav-date" class="text-xs text-gray-400">01/01/2026</div>
+    </div>
+  </nav>
+
+  <main class="flex-grow p-6 overflow-hidden">
+    <div class="grid grid-cols-[300px_1fr] gap-6 h-full">
+      <!-- Sidebar -->
+      <aside class="panel overflow-y-auto gs-sidebar">
+        <ul class="space-y-2">
+          <li class="open">
+            <div class="flex items-center gap-2">
+              <a href="#getting-started-overview" class="flex-1 block p-3 rounded-lg bg-neutral-800 border border-neutral-700 hover:bg-neutral-700 transition-colors">Getting Started</a>
+              <button class="toggle w-8 h-8 rounded bg-neutral-800 border border-neutral-700 text-gray-400"></button>
+            </div>
+            <ul class="tree-sub pl-4 mt-2 space-y-1">
+              <li class="open">
+                <div class="flex items-center gap-2">
+                  <a href="#pressure-display" class="flex-1 block p-2 rounded-lg bg-neutral-800 border border-neutral-700 hover:bg-neutral-700 transition-colors">Pressure Display</a>
+                  <button class="toggle w-8 h-8 rounded bg-neutral-800 border border-neutral-700 text-gray-400"></button>
+                </div>
+                <ul class="tree-sub pl-4 mt-1 space-y-1 text-sm">
+                  <li><a href="#channel-selector" class="block p-2 rounded hover:bg-neutral-700">Channel Selector</a></li>
+                  <li><a href="#channel-configuration" class="block p-2 rounded hover:bg-neutral-700">Channel Configuration</a></li>
+                  <li><a href="#channel-monitor" class="block p-2 rounded hover:bg-neutral-700">Channel Monitor</a></li>
+                </ul>
+              </li>
+              <li><a href="#trend" class="block p-2 rounded-lg bg-neutral-800 border border-neutral-700 hover:bg-neutral-700 transition-colors">Trend</a></li>
+              <li><a href="#details" class="block p-2 rounded-lg bg-neutral-800 border border-neutral-700 hover:bg-neutral-700 transition-colors">Details</a></li>
+            </ul>
+          </li>
+        </ul>
+      </aside>
+
+      <!-- Content -->
+      <div class="panel overflow-y-auto p-8 bg-neutral-900">
+        <article>
+          <section id="getting-started-overview" class="guide-section active">
+            <h1 class="text-4xl font-bold mb-6">Getting Started</h1>
+            <p class="text-xl text-gray-400">Welcome to the Data Logging Information Centre.</p>
+          </section>
+
+          <section id="pressure-display" class="guide-section">
+            <h2 class="text-3xl font-bold mb-6">Pressure Display</h2>
+            <img src="/guide/Clips/Pressure%20Display/Pressure%20Display%20Overview.png" class="rounded-xl border border-neutral-700 mb-6">
+          </section>
+
+          <section id="channel-selector" class="guide-section">
+            <h2 class="text-3xl font-bold mb-6">Channel Selector</h2>
+            <video controls class="rounded-xl border border-neutral-700 mb-6 w-full max-w-4xl mx-auto">
+              <source src="/guide/Clips/Pressure%20Display/Channel%20Selector.mp4">
+            </video>
+          </section>
+
+          <section id="trend" class="guide-section">
+            <h2 class="text-3xl font-bold mb-6">Trend</h2>
+            <img src="/guide/Clips/Trend/Trend%20Overview.png" class="rounded-xl border border-neutral-700 mb-6">
+          </section>
+
+          <section id="details" class="guide-section">
+            <h2 class="text-3xl font-bold mb-6">Details</h2>
+            <img src="/guide/Clips/Details/Details%20Overview.png" class="rounded-xl border border-neutral-700 mb-6">
+          </section>
+        </article>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Clock
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('nav-time').textContent = now.toLocaleTimeString('en-GB', { hour12: false });
+      document.getElementById('nav-date').textContent = now.toLocaleDateString('en-GB');
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // Sidebar Toggles
+    document.querySelectorAll('.toggle').forEach(btn => {
+      btn.onclick = (e) => {
+        e.preventDefault();
+        btn.closest('li').classList.toggle('open');
+      };
+    });
+
+    // Router
+    function route() {
+      const id = (location.hash || "#getting-started-overview").slice(1);
+      document.querySelectorAll(".guide-section").forEach(s => s.classList.toggle("active", s.id === id));
+      document.querySelectorAll(".gs-sidebar a").forEach(a => a.classList.toggle("active", a.getAttribute("href") === "#" + id));
+      const link = document.querySelector(`.gs-sidebar a[href="#${CSS.escape(id)}"]`);
+      if (link) {
+        let parent = link.closest('li');
+        while (parent) {
+          if (parent.classList.contains('has-children') || parent.querySelector('.tree-sub')) parent.classList.add('open');
+          parent = parent.parentElement.closest('li');
+        }
+      }
+    }
+    window.addEventListener("hashchange", route);
+    document.addEventListener("DOMContentLoaded", route);
+  </script>
+</body>
+</html>

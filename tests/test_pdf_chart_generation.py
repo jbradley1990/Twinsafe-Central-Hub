@@ -5,23 +5,23 @@ import time
 
 @pytest.fixture(scope="session", autouse=True)
 def live_server():
-    server = subprocess.Popen(["python3.12", "flask_server.py"])
+    server = subprocess.Popen(["python3", "-m", "visualisation.backend.main"])
     time.sleep(5)
     yield
     server.terminate()
     server.wait()
 
 def test_generate_button_is_visible_after_file_upload(page: Page, live_server):
-    page.goto("http://localhost:9000/#pdf-chart-generation")
+    page.goto("http://localhost:9000/pages/pdf-chart-generation.html")
 
     page.wait_for_selector("#pcg-initial-content")
 
     with page.expect_file_chooser() as fc:
-        page.locator("#pcg-link").click()
+        page.locator("#pcg-btn-select-files").click()
 
     fc.value.set_files([
-        "test_data/details.json",
-        "test_data/data.csv"
+        "chart_generation/test_data/21-1-2026_14-54-36_details.json",
+        "chart_generation/test_data/21-1-2026_14-54-36_data_1.csv"
     ])
 
     generate_button = page.locator("button", has_text="Generate PDF Chart")

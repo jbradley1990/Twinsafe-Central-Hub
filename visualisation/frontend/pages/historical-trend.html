@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Historical Trend</title>
+  <script src="../assets/plotly-latest.min.js"></script>
+  <script src="../assets/tailwind.js"></script>
+  <link rel="stylesheet" href="../styles/main.css" />
+  <style>
+    .chart-container {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+    #main-content {
+      display: grid;
+      grid-template-columns: 1fr 400px;
+      gap: 20px;
+      padding: 20px;
+      height: calc(100vh - 60px);
+      box-sizing: border-box;
+    }
+    .hoverlayer .hovertext, .hoverlayer .axistext, .hoverlayer .hovercursor, .hoverlayer path, .hoverlayer rect {
+      display: none !important;
+    }
+  </style>
+</head>
+<body class="body-styles flex flex-col h-screen overflow-hidden">
+  <nav class="flex items-center justify-between px-6 py-3 bg-neutral-900 border-b border-neutral-800 shadow-md flex-shrink-0">
+    <div class="flex items-center gap-6">
+      <img src="../assets/Green Oliver V.png" alt="Logo" class="h-8 cursor-pointer" onclick="location.href='rig-overview.html'">
+      <div class="flex gap-4">
+        <a href="rig-overview.html" class="text-gray-400 font-medium hover:text-white transition-colors">Rig Overview</a>
+        <a href="getting-started.html" class="text-gray-400 font-medium hover:text-white transition-colors">Getting Started</a>
+        <a href="pdf-chart-generation.html" class="text-gray-400 font-medium hover:text-white transition-colors">PDF Generation</a>
+        <a href="historical-trend.html" class="text-white font-medium hover:text-gray-300">Historical Trend</a>
+      </div>
+    </div>
+    <div class="flex flex-col items-end">
+      <div id="nav-time" class="text-lg font-bold leading-none">00:00:00</div>
+      <div id="nav-date" class="text-xs text-gray-400">01/01/2026</div>
+    </div>
+  </nav>
+
+  <main id="main-content">
+    <div id="chart-panel" class="panel relative overflow-hidden bg-black p-0 border-0">
+        <div id="chart" class="chart-container"></div>
+        <div id="messageOverlay" class="absolute inset-0 flex items-center justify-center p-4 bg-black/90 z-50">
+            <div class="text-center">
+                <h3 class="text-2xl font-bold mb-2">No data loaded</h3>
+                <p class="text-gray-400">Please select a CSV file or start live mode.</p>
+            </div>
+        </div>
+    </div>
+
+    <aside id="uiSidebar" class="flex flex-col gap-5 min-h-0">
+        <!-- Pinned Hover Panel (Channel List) -->
+        <div id="pinnedHover" class="panel flex-1 flex flex-col min-h-0 overflow-hidden hidden">
+            <div id="phTime" class="text-xl font-bold mb-4 sticky top-0 bg-[#1a1a1a] pb-2 z-10"></div>
+            <div id="phRows" class="flex-1 overflow-y-auto space-y-1"></div>
+        </div>
+
+        <!-- Measurement Panel -->
+        <div id="measurementOverlay" class="panel flex-1 flex flex-col min-h-0 overflow-hidden hidden">
+            <h3 class="text-lg font-bold mb-4">Measurements</h3>
+            <div id="measurementMeta" class="grid grid-cols-1 gap-1 text-sm text-gray-400 mb-4"></div>
+            <div id="measurementRows" class="flex-1 overflow-y-auto space-y-2"></div>
+        </div>
+
+        <!-- Controls -->
+        <div id="controlOverlay" class="flex flex-col gap-3">
+            <div class="flex gap-3">
+                <label class="btn btn-success flex-1">
+                    <span id="fileInputText">Select CSV</span>
+                    <input type="file" id="fileInput" accept=".csv" class="hidden">
+                </label>
+                <button id="liveModeBtn" class="btn flex-1">Go Live</button>
+            </div>
+            <div class="flex gap-3">
+                <button id="measurementToggleBtn" class="btn btn-secondary flex-1">Cursors Off</button>
+                <select id="timeWindowSelect" class="btn btn-compact bg-black text-white border-neutral-700 w-24 hidden">
+                    <option value="60000">1m</option>
+                    <option value="300000">5m</option>
+                    <option value="3600000">1h</option>
+                </select>
+            </div>
+        </div>
+    </aside>
+  </main>
+
+  <script>
+    // Clock
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('nav-time').textContent = now.toLocaleTimeString('en-GB', { hour12: false });
+      document.getElementById('nav-date').textContent = now.toLocaleDateString('en-GB');
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // Common State
+    const chartDiv = document.getElementById('chart');
+    const messageOverlay = document.getElementById('messageOverlay');
+    const fileInput = document.getElementById('fileInput');
+    const fileInputText = document.getElementById('fileInputText');
+    const liveModeBtn = document.getElementById('liveModeBtn');
+    const measurementToggleBtn = document.getElementById('measurementToggleBtn');
+    const pinnedHover = document.getElementById('pinnedHover');
+    const phTime = document.getElementById('phTime');
+    const phRows = document.getElementById('phRows');
+    const measurementOverlay = document.getElementById('measurementOverlay');
+
+    const COLORS = ['#FF0000', '#00B050', '#FFA500', '#FFFFFF', '#0000FF', '#00FFFF', '#FF00FF', '#80FF00', '#0000FF'];
+    const UNITS = ['psi', 'psi', 'psi', 'psi', 'psi', 'psi', 'psi', 'psi', '°C'];
+
+    let isLive = false;
+    let liveInterval = null;
+    let channelNames = [];
+    let lastTimestamp = null;
+    let masterData = { x: [], y: Array.from({length: 9}, () => []) };
+
+    // --- PLOTLY HELPERS ---
+    function buildLayout() {
+        return {
+            margin: { l: 60, r: 20, b: 40, t: 20 },
+            plot_bgcolor: '#000',
+            paper_bgcolor: '#000',
+            showlegend: false,
+            hovermode: 'x unified',
+            xaxis: { gridcolor: '#222', tickfont: { color: '#888' }, spikecolor: '#fff', spikedash: 'dash', spikethickness: 1, spikemode: 'across', spikesnap: 'cursor' },
+            yaxis: { title: { text: 'Pressure (psi)', font: { color: '#fff' } }, gridcolor: '#222', tickfont: { color: '#888' } },
+            yaxis2: { overlaying: 'y', visible: false, range: [-60, 260] }
+        };
+    }
+
+    async function initChart(traces) {
+        await Plotly.newPlot(chartDiv, traces, buildLayout(), { responsive: true, displayModeBar: false });
+        messageOverlay.classList.add('hidden');
+        pinnedHover.classList.remove('hidden');
+        attachEvents();
+    }
+
+    function attachEvents() {
+        chartDiv.on('plotly_hover', e => {
+            const t = new Date(e.points[0].x);
+            updatePinned(t);
+        });
+        chartDiv.on('plotly_unhover', () => updatePinned(lastTimestamp || new Date()));
+    }
+
+    // --- DATA LOADING (CSV) ---
+    fileInput.addEventListener('change', async e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        fileInputText.textContent = file.name;
+        isLive = false; stopLive();
+
+        const text = await file.text();
+        const lines = text.trim().split('\n');
+        const header = lines[0].split(',');
+
+        channelNames = header.slice(1, 10).map((h, i) => h.trim() || (i === 8 ? 'Ambient Temp' : `Channel ${i+1}`));
+
+        const traces = channelNames.map((name, i) => ({
+            x: [], y: [], name, mode: 'lines', line: { color: COLORS[i], width: 2, dash: i === 8 ? 'dot' : 'solid' },
+            yaxis: i === 8 ? 'y2' : 'y', visible: header[i+1].trim() !== ''
+        }));
+
+        lines.slice(1).forEach(line => {
+            const cols = line.split(',');
+            const t = new Date(cols[0]);
+            if (isNaN(t)) return;
+            lastTimestamp = t;
+            for(let i=0; i<9; i++) {
+                const v = parseFloat(cols[i*2+1]);
+                if (!isNaN(v)) {
+                    traces[i].x.push(t);
+                    traces[i].y.push(v);
+                }
+            }
+        });
+
+        initChart(traces);
+    });
+
+    // --- LIVE MODE ---
+    liveModeBtn.addEventListener('click', () => {
+        if (isLive) {
+            isLive = false; stopLive();
+            liveModeBtn.textContent = 'Go Live';
+            liveModeBtn.classList.remove('btn-danger');
+        } else {
+            isLive = true; startLive();
+            liveModeBtn.textContent = 'Stop Live';
+            liveModeBtn.classList.add('btn-danger');
+            messageOverlay.classList.add('hidden');
+        }
+    });
+
+    function startLive() {
+        // Initial traces for live mode
+        const traces = Array.from({length: 9}, (_, i) => ({
+            x: [], y: [], name: `Channel ${i+1}`, mode: 'lines', line: { color: COLORS[i], width: 2 },
+            yaxis: i === 8 ? 'y2' : 'y'
+        }));
+        initChart(traces);
+        liveInterval = setInterval(async () => {
+            try {
+                const res = await fetch('/api/live');
+                const data = await res.json();
+                const t = new Date(data.timestamp);
+                lastTimestamp = t;
+
+                const xUpdate = [];
+                const yUpdate = [];
+                const indices = [];
+
+                data.channels.forEach((ch, i) => {
+                    xUpdate.push([t]);
+                    yUpdate.push([ch.value]);
+                    indices.push(i);
+                    channelNames[i] = ch.name;
+                });
+
+                Plotly.extendTraces(chartDiv, { x: xUpdate, y: yUpdate }, indices);
+
+                // Keep window
+                const windowMs = 60000; // 1 min
+                Plotly.relayout(chartDiv, { 'xaxis.range': [new Date(t - windowMs), t] });
+
+                updatePinned(t);
+            } catch (e) { console.error(e); }
+        }, 1000);
+    }
+
+    function stopLive() { clearInterval(liveInterval); }
+
+    // --- UI UPDATES ---
+    function updatePinned(t) {
+        if (!t) return;
+        phTime.textContent = t.toLocaleString('en-GB', { hour12: false });
+        let html = '';
+        chartDiv.data.forEach((tr, i) => {
+            const val = sampleValue(tr, t);
+            const shown = tr.visible !== 'legendonly';
+            html += `
+                <div class="ph-row flex flex-col p-2 border-b border-white/5 cursor-pointer hover:bg-white/5 transition-colors ${shown ? '' : 'opacity-40'}" onclick="toggleTrace(${i})">
+                    <div class="flex items-center gap-2 text-sm font-medium">
+                        <span style="width:20px; border-top:3px ${i===8?'dotted':'solid'} ${COLORS[i]};"></span>
+                        <span class="truncate">${channelNames[i] || tr.name}</span>
+                    </div>
+                    <div class="text-lg font-bold ml-7">${val !== null ? val.toFixed(1) : '—'} <span class="text-xs font-normal opacity-60">${UNITS[i]}</span></div>
+                </div>
+            `;
+        });
+        phRows.innerHTML = html;
+    }
+
+    function sampleValue(tr, t) {
+        if (!tr.x.length) return null;
+        const target = t.getTime();
+        let lo=0, hi=tr.x.length-1;
+        while(lo<=hi) {
+            let mid=(lo+hi)>>1;
+            let mt=new Date(tr.x[mid]).getTime();
+            if(mt===target) return tr.y[mid];
+            if(mt<target) lo=mid+1; else hi=mid-1;
+        }
+        return tr.y[lo] || tr.y[hi] || null;
+    }
+
+    window.toggleTrace = (i) => {
+        const next = chartDiv.data[i].visible === 'legendonly' ? true : 'legendonly';
+        Plotly.restyle(chartDiv, { visible: next }, [i]).then(() => updatePinned(lastTimestamp));
+    };
+
+    // --- MEASUREMENTS ---
+    // (Simplified measurement logic from Historical-Trend.html would go here)
+    measurementToggleBtn.addEventListener('click', () => {
+        measurementOverlay.classList.toggle('hidden');
+        measurementToggleBtn.textContent = measurementOverlay.classList.contains('hidden') ? 'Cursors Off' : 'Cursors On';
+        measurementToggleBtn.classList.toggle('btn-blue');
+        measurementToggleBtn.classList.toggle('btn-accent');
+    });
+
+  </script>
+</body>
+</html>
