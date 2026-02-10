@@ -57,17 +57,15 @@ async def historical_trend_legacy():
     return RedirectResponse(url="/pages/historical-trend.html")
 
 # Serve Frontend static files
+# We mount the subdirectories at the root paths to support relative links from /pages/*.html
 app.mount("/pages", StaticFiles(directory=str(FRONTEND_DIR / "pages")), name="pages")
 app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIR / "assets")), name="assets")
 app.mount("/styles", StaticFiles(directory=str(FRONTEND_DIR / "styles")), name="styles")
 
-# Also mount the root frontend dir for index.html if needed
-app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
-
-# If there are guide assets, mount them too
-GUIDE_DIR = Path("guide") # Adjust if guide assets are elsewhere
-if GUIDE_DIR.exists():
-    app.mount("/guide", StaticFiles(directory=str(GUIDE_DIR)), name="guide")
+# Mount any other top-level frontend assets if they exist (e.g. favicon)
+if FRONTEND_DIR.exists():
+    # Only mount if directory isn't already covered
+    app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
 
 if __name__ == "__main__":
     import uvicorn

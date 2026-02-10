@@ -192,6 +192,39 @@ body.body-styles {
   border-color: var(--color-danger-dark);
 }
 
+.btn.btn-primary {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: white;
+}
+
+.btn.btn-primary:hover {
+  background: #7a8a8b;
+  border-color: #7a8a8b;
+}
+
+.btn.btn-blue {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: white;
+}
+
+.btn.btn-blue:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+.btn.btn-accent {
+  background: var(--color-warning);
+  border-color: var(--color-warning);
+  color: #000;
+}
+
+.btn.btn-accent:hover {
+  background: #eab308;
+  border-color: #eab308;
+}
+
 .btn.btn-compact {
   min-height: 32px;
   padding: 0.25rem 0.75rem;
@@ -299,17 +332,16 @@ input[type="number"]::-webkit-outer-spin-button {
   touch-action: pan-x pan-y;
 }
 
-#controlOverlay {
-  position: absolute;
-  bottom: 1rem;
-  right: 1rem;
-  width: 20%;
-  height: var(--control-overlay-height);
-  box-sizing: border-box;
+#controlOverlay.panel {
+  width: 100%;
+  height: auto;
+  min-height: 64px;
   background: rgba(39, 39, 39, 0.8);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-md);
   z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--spacing-md);
 }
 
 .control-grid {
