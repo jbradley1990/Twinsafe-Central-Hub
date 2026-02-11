@@ -232,8 +232,24 @@ body.body-styles {
 }
 
 /* Alias for backward compatibility */
-.btn.btn-green { @extend .btn.btn-success; }
-.btn.btn-red { @extend .btn.btn-danger; }
+.btn.btn-green {
+  background: var(--color-success);
+  border-color: var(--color-success);
+  color: white;
+}
+.btn.btn-green:hover {
+  background: var(--color-success-dark);
+  border-color: var(--color-success-dark);
+}
+.btn.btn-red {
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+  color: white;
+}
+.btn.btn-red:hover {
+  background: var(--color-danger-dark);
+  border-color: var(--color-danger-dark);
+}
 
 /* ============================================
    COMPONENTS: FORM

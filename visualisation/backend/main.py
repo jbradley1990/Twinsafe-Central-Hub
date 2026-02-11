@@ -62,6 +62,13 @@ app.mount("/pages", StaticFiles(directory=str(FRONTEND_DIR / "pages")), name="pa
 app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIR / "assets")), name="assets")
 app.mount("/styles", StaticFiles(directory=str(FRONTEND_DIR / "styles")), name="styles")
 
+# Support guide assets used in Getting Started page
+import os
+if os.path.exists("guide"):
+    app.mount("/guide", StaticFiles(directory="guide"), name="guide")
+elif os.path.exists("Getting-Started/guide"):
+    app.mount("/guide", StaticFiles(directory="Getting-Started/guide"), name="guide")
+
 # Mount any other top-level frontend assets if they exist (e.g. favicon)
 if FRONTEND_DIR.exists():
     # Only mount if directory isn't already covered

@@ -91,15 +91,15 @@
         </div>
 
         <!-- Controls -->
-        <div id="controlOverlay" class="panel flex justify-center items-center gap-4 w-full mt-auto !h-auto min-h-[80px]">
-            <label class="btn btn-lg btn-success cursor-pointer flex-1 flex items-center justify-center whitespace-nowrap">
+        <div id="controlOverlay" class="panel flex justify-center items-center gap-4 w-full mt-auto !h-auto min-h-[80px] p-4">
+            <label class="btn btn-lg btn-success cursor-pointer w-1/2 flex items-center justify-center whitespace-nowrap overflow-hidden">
                 <i class="fas fa-file-upload"></i>
-                <span id="fileInputText" class="truncate ml-2">Select CSV</span>
+                <span id="fileInputText" class="truncate ml-2 leading-none">Select CSV</span>
                 <input type="file" id="fileInput" accept=".csv" class="hidden">
             </label>
-            <button id="measurementToggleBtn" class="btn btn-lg btn-primary flex-1 flex items-center justify-center whitespace-nowrap">
+            <button id="measurementToggleBtn" class="btn btn-lg btn-primary w-1/2 flex items-center justify-center whitespace-nowrap overflow-hidden">
                 <i class="fas fa-ruler-combined"></i>
-                <span class="ml-2">Cursors Off</span>
+                <span class="ml-2 leading-none">Cursors Off</span>
             </button>
         </div>
     </aside>
@@ -118,7 +118,7 @@
     // Common State
     const chartDiv = document.getElementById('chart');
     const messageOverlay = document.getElementById('messageOverlay');
-    const fileInput = document.getElementById('fileInput');
+    const fileInput = document.getElementById('csvInput');
     const fileInputText = document.getElementById('fileInputText');
     const measurementToggleBtn = document.getElementById('measurementToggleBtn');
     const pinnedHover = document.getElementById('pinnedHover');
@@ -135,7 +135,7 @@
     document.getElementById('chart-panel').appendChild(hitAreaA);
     document.getElementById('chart-panel').appendChild(hitAreaB);
 
-    const COLORS = ['#FF0000', '#00B050', '#FFA500', '#FFFFFF', '#0000FF', '#00FFFF', '#FF00FF', '#80FF00', '#0000FF'];
+    const COLORS = ['#FF0000', '#00B050', '#FFA500', '#FFFFFF', '#7030A0', '#00FFFF', '#FF00FF', '#80FF00', '#0000FF'];
     const UNITS = ['psi', 'psi', 'psi', 'psi', 'psi', 'psi', 'psi', 'psi', '°C'];
 
     let channelNames = [];
@@ -160,7 +160,7 @@
             },
             xaxis: {
                 gridcolor: '#222',
-                tickfont: { color: '#888' },
+            tickfont: { color: '#fff' },
                 showspikes: true,
                 spikecolor: '#fff',
                 spikedash: 'dot',
@@ -168,7 +168,7 @@
                 spikemode: 'across',
                 spikesnap: 'cursor'
             },
-            yaxis: { title: { text: 'Pressure (psi)', font: { color: '#fff' } }, gridcolor: '#222', tickfont: { color: '#888' } },
+        yaxis: { title: { text: 'Pressure (psi)', font: { color: '#fff' } }, gridcolor: '#222', tickfont: { color: '#fff' } },
             yaxis2: { overlaying: 'y', visible: false, range: [-60, 260] }
         };
     }
@@ -210,7 +210,7 @@
         const traces = channelNames.map((name, i) => ({
             x: [], y: [], name, mode: 'lines', line: { color: COLORS[i], width: 2, dash: i === 8 ? 'dot' : 'solid' },
             yaxis: i === 8 ? 'y2' : 'y', visible: header[i+1].trim() !== '',
-            hoverinfo: 'x'
+            hoverinfo: 'none'
         }));
 
         lines.slice(1).forEach(line => {
