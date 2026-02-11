@@ -8,9 +8,9 @@
   <link rel="stylesheet" href="../styles/main.css" />
   <style>
     :root {
-      --green: rgba(34, 197, 94, 0.6);
-      --red: rgba(239, 68, 68, 0.7);
-      --yellow: rgba(234, 179, 8, 0.9);
+      --green: rgba(34, 197, 94, 0.8);
+      --red: rgba(239, 68, 68, 0.8);
+      --orange: rgba(249, 115, 22, 0.9);
       --blue: rgba(59, 130, 246, 0.7);
     }
     .rig-card {
@@ -25,10 +25,9 @@
       background: var(--color-bg-tertiary);
       transform: translateY(-3px);
     }
-    .rig-card.online { border-color: var(--blue); box-shadow: 0 0 10px var(--blue); }
-    .rig-card.offline { border-color: var(--yellow); box-shadow: 0 0 10px var(--yellow); }
-    .rig-card.free { border-color: var(--green); box-shadow: 0 0 10px var(--green); }
-    .rig-card.busy { border-color: var(--red); box-shadow: 0 0 10px var(--red); }
+    .rig-card.status-green { border-color: var(--green); box-shadow: 0 0 15px var(--green); }
+    .rig-card.status-red { border-color: var(--red); box-shadow: 0 0 15px var(--red); }
+    .rig-card.status-orange { border-color: var(--orange); box-shadow: 0 0 15px var(--orange); }
   </style>
 </head>
 <body class="body-styles flex flex-col h-screen">
@@ -58,7 +57,6 @@
           <div class="text-gray-400">User</div>    <div id="hydrorig1-user">—</div>
           <div class="text-gray-400">OTS No</div>  <div id="hydrorig1-ref">—</div>
           <div class="text-gray-400">Test</div>    <div id="hydrorig1-test">—</div>
-          <div class="text-gray-400">Prompt</div>  <div id="hydrorig1-prompt">—</div>
         </div>
       </div>
       <!-- HYDRO 2 -->
@@ -68,7 +66,6 @@
           <div class="text-gray-400">User</div>    <div id="hydrorig2-user">—</div>
           <div class="text-gray-400">OTS No</div>  <div id="hydrorig2-ref">—</div>
           <div class="text-gray-400">Test</div>    <div id="hydrorig2-test">—</div>
-          <div class="text-gray-400">Prompt</div>  <div id="hydrorig2-prompt">—</div>
         </div>
       </div>
       <!-- GAS 1 -->
@@ -78,7 +75,6 @@
           <div class="text-gray-400">User</div>    <div id="gasrig1-user">—</div>
           <div class="text-gray-400">OTS No</div>  <div id="gasrig1-ref">—</div>
           <div class="text-gray-400">Test</div>    <div id="gasrig1-test">—</div>
-          <div class="text-gray-400">Prompt</div>  <div id="gasrig1-prompt">—</div>
         </div>
       </div>
       <!-- GAS 2 -->
@@ -88,7 +84,6 @@
           <div class="text-gray-400">User</div>    <div id="gasrig2-user">—</div>
           <div class="text-gray-400">OTS No</div>  <div id="gasrig2-ref">—</div>
           <div class="text-gray-400">Test</div>    <div id="gasrig2-test">—</div>
-          <div class="text-gray-400">Prompt</div>  <div id="gasrig2-prompt">—</div>
         </div>
       </div>
     </div>
@@ -105,12 +100,7 @@
     setInterval(updateClock, 1000);
 
     // Rig Status Logic
-    const rigs = [
-      { id:"hydrorig1", host:"10.1.6.101:8080" },
-      { id:"hydrorig2", host:"10.1.6.102:8080" },
-      { id:"gasrig1",   host:"10.1.6.103:8080" },
-      { id:"gasrig2",   host:"10.1.6.104:8080" },
-    ];
+    const rigIds = ["hydrorig1", "hydrorig2", "gasrig1", "gasrig2"];
 
     document.querySelectorAll(".rig-card").forEach(card => {
       card.addEventListener("click", () => {
@@ -119,46 +109,41 @@
       });
     });
 
-    function normalise(json){
-      if (!json) return null;
-      if (json.user) return json;
-      const keys = Object.keys(json);
-      return json[keys[0]] || null;
-    }
-
-    async function updateRig(r){
-      const card = document.querySelector(`.rig-card[data-id="${r.id}"]`);
+    async function refreshAll(){
       try {
-        const res = await fetch(`/api/rig-json?host=${encodeURIComponent(r.host)}&ts=${Date.now()}`);
-        if(!res.ok) throw new Error("No data");
-        const raw = await res.json();
-        const data = normalise(raw);
-        card.classList.add("online");
-        card.classList.remove("offline");
-        if(!data) {
-          card.classList.remove("busy");
-          card.classList.add("free");
-          return;
-        }
-        document.getElementById(`${r.id}-user`).textContent   = data.user || "—";
-        document.getElementById(`${r.id}-ref`).textContent    = data.rdReference || "—";
-        document.getElementById(`${r.id}-test`).textContent   = data.testTitle || "—";
-        document.getElementById(`${r.id}-prompt`).textContent = data.currentPrompt || "—";
-        const busy = (data.user || "").trim() !== "";
-        card.classList.toggle("free", !busy);
-        card.classList.toggle("busy", busy);
+        const res = await fetch(`/api/rigs-status?ts=${Date.now()}`);
+        if(!res.ok) throw new Error("API Error");
+        const data = await res.json();
+
+        rigIds.forEach(id => {
+          const card = document.querySelector(`.rig-card[data-id="${id}"]`);
+          const rigData = data[id];
+          if(!rigData || !card) return;
+
+          // Update text fields
+          document.getElementById(`${id}-user`).textContent = rigData.user || "—";
+          document.getElementById(`${id}-ref`).textContent  = rigData.ots_no || "—";
+          document.getElementById(`${id}-test`).textContent = rigData.test_name || "—";
+
+          // Update status colors
+          card.classList.remove("status-green", "status-red", "status-orange");
+          if (rigData.color_state === "green") card.classList.add("status-green");
+          else if (rigData.color_state === "red") card.classList.add("status-red");
+          else card.classList.add("status-orange");
+        });
       } catch(err) {
-        if (r.id === "hydrorig1") {
-          card.classList.remove("busy", "online", "offline");
-          card.classList.add("free");
-        } else {
-          card.classList.remove("busy", "free", "online");
-          card.classList.add("offline");
-        }
+        console.error("Failed to fetch rig status:", err);
+        // Set all to orange on error
+        rigIds.forEach(id => {
+          const card = document.querySelector(`.rig-card[data-id="${id}"]`);
+          if(card) {
+            card.classList.remove("status-green", "status-red");
+            card.classList.add("status-orange");
+          }
+        });
       }
     }
 
-    function refreshAll(){ rigs.forEach(updateRig); }
     refreshAll();
     setInterval(refreshAll, 5000);
   </script>

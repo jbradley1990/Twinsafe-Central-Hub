@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 from pathlib import Path
 
-from .config import FRONTEND_DIR, PDF_DIR
+from .config import FRONTEND_DIR
 from .pages import rig_overview, pdf_generation, historical_trend
 
 app = FastAPI(title="Twinsafe Central Hub")
