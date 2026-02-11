@@ -38,7 +38,6 @@ The application will be available at `http://localhost:9000`.
 - `visualisation/backend/`: FastAPI application, modular routers, and OPC integration.
 - `visualisation/frontend/`: Modernized UI with Tailwind CSS and centralized styling.
 - `chart_generation/`: Core logic for generating PDF charts from CSV data.
-- `OTS_File_Sorter/`: Utility for monitoring and sorting data files.
 - `utils/`: Miscellaneous utility scripts.
 
 ## Features
