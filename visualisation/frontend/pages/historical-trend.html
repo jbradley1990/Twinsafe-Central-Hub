@@ -92,14 +92,12 @@
 
         <!-- Controls -->
         <div id="controlOverlay" class="panel flex justify-center items-center gap-4 w-full mt-auto !h-auto min-h-[80px] p-4">
-            <label class="btn btn-lg btn-success cursor-pointer w-1/2 flex items-center justify-center whitespace-nowrap overflow-hidden h-full leading-none">
-                <i class="fas fa-file-upload"></i>
-                <span id="fileInputText" class="truncate ml-2 leading-none">Select CSV</span>
+            <label class="btn btn-success cursor-pointer w-1/2 flex items-center justify-center whitespace-nowrap overflow-hidden h-14 !p-0 text-lg font-bold pt-[2px]">
+                <span id="fileInputText" class="truncate">Select CSV</span>
                 <input type="file" id="csvInput" accept=".csv" class="hidden">
             </label>
-            <button id="measurementToggleBtn" class="btn btn-lg btn-primary w-1/2 flex items-center justify-center whitespace-nowrap overflow-hidden h-full leading-none">
-                <i class="fas fa-ruler-combined"></i>
-                <span class="ml-2 leading-none">Cursors Off</span>
+            <button id="measurementToggleBtn" class="btn btn-primary w-1/2 flex items-center justify-center whitespace-nowrap overflow-hidden h-14 !p-0 text-lg font-bold pt-[2px]">
+                <span>Cursors Off</span>
             </button>
         </div>
     </aside>
