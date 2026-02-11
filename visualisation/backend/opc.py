@@ -142,14 +142,14 @@ def poll_rig(rig_id: str, wrapper: OpcUaWrapper):
     user = wrapper.read("user")
     ots_no = wrapper.read("ots_no")
     test_name = wrapper.read("test_name")
-    full_name = wrapper.read("current_user_fullname")
+    logged_in = wrapper.read("logged_in")
 
     # Check current connection state
     connected = wrapper.connected
 
     if not connected:
         color_state = "orange"
-    elif not full_name or str(full_name).strip() == "":
+    elif not logged_in:
         color_state = "green"
     else:
         color_state = "red"
@@ -170,7 +170,7 @@ def background_poll_loop():
         for rig_id, wrapper in rig_opc.items():
             executor.submit(poll_rig, rig_id, wrapper)
 
-        time.sleep(5)
+        time.sleep(5)  # Poll every 5 seconds
 
 # Start background thread
 polling_thread = threading.Thread(target=background_poll_loop, daemon=True)
