@@ -7,4 +7,3 @@ reportlab
 numpy
 opcua
 requests
-watchdog

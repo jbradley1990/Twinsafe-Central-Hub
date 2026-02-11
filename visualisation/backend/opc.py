@@ -1,6 +1,7 @@
 import logging
 import time
-from threading import Lock
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, Tuple, Optional
 
 # Try to import opcua, but don't fail if not present
@@ -20,7 +21,7 @@ class OpcUaWrapper:
     def __init__(self, endpoint: str, name: str = "Default"):
         self.endpoint = endpoint
         self.name = name
-        self._lock = Lock()
+        self._lock = threading.Lock()
         self.client: Optional[Any] = None
         self.node_cache: Dict[str, Any] = {}
         self.connected = False
@@ -28,16 +29,14 @@ class OpcUaWrapper:
         self.attempt_cooldown = 10  # Seconds between reconnection attempts
 
         if OPC_AVAILABLE:
-            try:
-                self._connect()
-            except Exception as e:
-                logger.error(f"[{self.name}] Failed initial connect to {self.endpoint}: {e}")
+            # Initial connect attempt is now handled by background polling
+            pass
 
     def _connect(self) -> None:
         if not OPC_AVAILABLE: return
         logger.info(f"[{self.name}] Connecting to OPC UA at {self.endpoint}")
         try:
-            # We use a 5 second timeout for connection as requested
+            # 5 second timeout
             self.client = Client(self.endpoint, timeout=5)
             self.client.connect()
             self.connected = True
@@ -57,10 +56,9 @@ class OpcUaWrapper:
         if not OPC_AVAILABLE: return False
         if not self.client or not self.connected: return False
         try:
-            # Check connection by reading ServerStatus or just a known node
             # Node i=2259 is ServerState
             state = self.client.get_node("ns=0;i=2259").get_value()
-            return state == 0 # 0 is Running
+            return state == 0
         except:
             self.connected = False
             return False
@@ -69,7 +67,6 @@ class OpcUaWrapper:
         if not OPC_AVAILABLE: return False
         if self.is_connected(): return True
 
-        # Check cooldown
         now = time.time()
         if now - self.last_attempt < self.attempt_cooldown:
             return False
@@ -78,12 +75,12 @@ class OpcUaWrapper:
         try:
             self._connect()
             return True
-        except:
+        except Exception as e:
+            logger.debug(f"[{self.name}] Reconnection failed: {e}")
             self.connected = False
             return False
 
     def read(self, key: str) -> Any:
-        # Mock data if OPC is not available
         if not OPC_AVAILABLE:
             return self._get_mock_data(key)
 
@@ -102,7 +99,6 @@ class OpcUaWrapper:
                 return self._get_mock_data(key)
 
     def _get_mock_data(self, key: str) -> Any:
-        # Provide some sensible defaults for UI when disconnected/unavailable
         if key == "channel_readings":
             import random
             return [random.uniform(0, 100) for _ in range(9)]
@@ -111,7 +107,7 @@ class OpcUaWrapper:
         if key == "user": return "—"
         if key == "ots_no": return "—"
         if key == "test_name": return "—"
-        if key == "current_user_fullname": return "" # Empty means "Green" status
+        if key == "current_user_fullname": return ""
         return None
 
     def write(self, key: str, value: Any) -> bool:
@@ -128,7 +124,7 @@ class OpcUaWrapper:
                 self.connected = False
                 return False
 
-# Shared instance for the main PLC (used by Historical Trend)
+# Shared instance for the main PLC
 opc = OpcUaWrapper(PLC_ENDPOINT, name="MainPLC")
 
 # Rig-specific instances
@@ -136,3 +132,46 @@ rig_opc: Dict[str, OpcUaWrapper] = {}
 for rig_id, ip in RIG_IPS.items():
     endpoint = f"opc.tcp://{ip}:4840"
     rig_opc[rig_id] = OpcUaWrapper(endpoint, name=rig_id)
+
+# Rig data cache
+rig_data_cache: Dict[str, Dict[str, Any]] = {}
+cache_lock = threading.Lock()
+
+def poll_rig(rig_id: str, wrapper: OpcUaWrapper):
+    # wrapper.read handles ensure_connected
+    user = wrapper.read("user")
+    ots_no = wrapper.read("ots_no")
+    test_name = wrapper.read("test_name")
+    full_name = wrapper.read("current_user_fullname")
+
+    # Check current connection state
+    connected = wrapper.connected
+
+    if not connected:
+        color_state = "orange"
+    elif not full_name or str(full_name).strip() == "":
+        color_state = "green"
+    else:
+        color_state = "red"
+
+    with cache_lock:
+        rig_data_cache[rig_id] = {
+            "user": user,
+            "ots_no": ots_no,
+            "test_name": test_name,
+            "color_state": color_state,
+            "connected": connected
+        }
+
+def background_poll_loop():
+    executor = ThreadPoolExecutor(max_workers=len(RIG_IPS) + 1)
+    while True:
+        # Poll all rigs in parallel
+        for rig_id, wrapper in rig_opc.items():
+            executor.submit(poll_rig, rig_id, wrapper)
+
+        time.sleep(5)
+
+# Start background thread
+polling_thread = threading.Thread(target=background_poll_loop, daemon=True)
+polling_thread.start()
