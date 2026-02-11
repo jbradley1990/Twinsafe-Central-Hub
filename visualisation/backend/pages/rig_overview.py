@@ -1,39 +1,39 @@
-from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import JSONResponse
-import json
-from urllib.request import Request as URLRequest, urlopen
-from urllib.error import URLError, HTTPError
+from fastapi import APIRouter
+from ..opc import rig_opc
 
 router = APIRouter()
 
-# @router.get("/api/rig-json")
-# async def rig_json_proxy(host: str, path: str = "/rig.json"):
-#     if not host:
-#         raise HTTPException(status_code=400, detail="host is required")
+@router.get("/api/rigs-status")
+async def rigs_status():
+    results = {}
+    for rig_id, wrapper in rig_opc.items():
+        # Check connection first
+        connected = wrapper.is_connected()
 
-#     if not path.startswith("/"):
-#         path = "/" + path
+        # Read values
+        user = wrapper.read("user")
+        ots_no = wrapper.read("ots_no")
+        test_name = wrapper.read("test_name")
+        full_name = wrapper.read("current_user_fullname")
 
-#     if host.startswith("http://") or host.startswith("https://"):
-#         base = host
-#     else:
-#         base = f"http://{host}"
+        # Determine color state based on requirements:
+        # orange if there is no connection
+        # green if ns=4;s=|var|...vumCurrentUser.wstFullName is empty
+        # red if ns=4;s=|var|...vumCurrentUser.wstFullName is not empty
 
-#     url = f"{base}{path}"
+        if not connected:
+            color_state = "orange"
+        elif not full_name or str(full_name).strip() == "":
+            color_state = "green"
+        else:
+            color_state = "red"
 
-#     try:
-#         req = URLRequest(url, headers={"Accept": "application/json"})
-#         with urlopen(req, timeout=3.5) as resp:
-#             raw = resp.read()
-#             try:
-#                 parsed = json.loads(raw)
-#                 return parsed
-#             except Exception:
-#                 # Return raw if not JSON
-#                 return JSONResponse(content={"error": "Invalid JSON from upstream"}, status_code=502)
-#     except HTTPError as e:
-#         raise HTTPException(status_code=502, detail=f"Upstream error {e.code}")
-#     except URLError as e:
-#         raise HTTPException(status_code=502, detail=f"Upstream unreachable: {e.reason}")
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
+        results[rig_id] = {
+            "user": user,
+            "ots_no": ots_no,
+            "test_name": test_name,
+            "color_state": color_state,
+            "connected": connected
+        }
+
+    return results
