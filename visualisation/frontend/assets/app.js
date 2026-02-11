@@ -443,7 +443,6 @@
     const fileInput = /** @type {HTMLInputElement|null} */ (byId('pcg-files'));
     const selectBtn = byId('pcg-btn-select-files');
     const editorNav = byId('pcg-editor-nav');
-    const statusEl = byId('pcg-status');
     const summaryEl = byId('pcg-file-summary');
     const overlay = byId('pcg-loading-overlay');
     const generateBtn = byId('pcg-btn-generate');
@@ -496,7 +495,6 @@
         {
           const stem = (detailsOriginalName || 'details').replace(/\.json$/i, '') + DETAILS_DOWNLOAD_SUFFIX;
           downloadTextFile(detailsText, stem);
-          if (statusEl) statusEl.textContent = 'Modified details JSON downloaded. Generating PDF…';
         }
 
         try {
@@ -508,7 +506,6 @@
               : `The PDF generator returned an error (${res.status} ${res.statusText}).`;
 
             showErrorDialog('PDF generation failed', msg, (res.errorText || '').slice(0, 2000));
-            if (statusEl) statusEl.textContent = msg;
             return;
           }
 
@@ -521,11 +518,9 @@
           a.remove();
           URL.revokeObjectURL(url);
 
-          if (statusEl) statusEl.textContent = 'Chart downloaded.';
         } catch (err) {
           console.error(err);
           showErrorDialog('PDF generator unreachable', 'Network or server error while generating the PDF.', err?.message || String(err));
-          if (statusEl) statusEl.textContent = 'Network/server error.';
         } finally {
           overlay.classList.add('hidden');
           document.body.style.overflow = prevOverflow;
@@ -535,7 +530,6 @@
 
     // File input change handler
     fileInput.addEventListener('change', async (e) => {
-      if (statusEl) statusEl.textContent = '';
 
       const files = Array.from(fileInput.files || []);
       const picked = classifyFiles(files);
@@ -565,8 +559,6 @@
       rawDataCsvText = dataText;
       loadDetails(detailsText);
 
-      if (statusEl) statusEl.textContent = 'Details loaded. Choose a section on the left to edit.';
-
       // default to Metadata section
       const firstBtn = editorNav.querySelector('button[data-section="metadata"]');
       if (firstBtn) {
@@ -576,8 +568,6 @@
 
       fileInput.value = '';
     });
-
-    if (statusEl) statusEl.textContent = 'Ready — click Select Files.';
   }
 
   // init for standalone page
