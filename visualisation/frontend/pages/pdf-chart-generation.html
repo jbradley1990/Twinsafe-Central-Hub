@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF Chart Generation</title>
+  <script src="../assets/tailwind.js"></script>
+  <link rel="stylesheet" href="../styles/main.css" />
+  <style>
+    #pcg-editor-nav button.active {
+      background: var(--color-bg-tertiary);
+      border-color: var(--color-accent);
+      color: white;
+    }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body class="body-styles flex flex-col h-screen">
+  <nav class="flex items-center justify-between px-6 py-3 bg-neutral-900 border-b border-neutral-800 shadow-md">
+    <div class="flex items-center gap-6">
+      <img src="../assets/Green Oliver V.png" alt="Logo" class="h-8 cursor-pointer" onclick="location.href='rig-overview.html'">
+      <div class="flex gap-4">
+        <a href="rig-overview.html" class="text-gray-400 font-medium hover:text-white transition-colors">Rig Overview</a>
+        <a href="getting-started.html" class="text-gray-400 font-medium hover:text-white transition-colors">Getting Started</a>
+        <a href="pdf-chart-generation.html" class="text-white font-medium hover:text-gray-300">PDF Generation</a>
+        <a href="historical-trend.html" class="text-gray-400 font-medium hover:text-white transition-colors">Historical Trend</a>
+      </div>
+    </div>
+    <div class="flex flex-col items-end">
+      <div id="nav-time" class="text-lg font-bold leading-none">00:00:00</div>
+      <div id="nav-date" class="text-xs text-gray-400">01/01/2026</div>
+    </div>
+  </nav>
+
+  <main class="flex-grow flex p-6 overflow-hidden gap-6">
+    <!-- Left Sidebar: Actions & Section Nav -->
+    <aside class="w-72 flex flex-col gap-6">
+      <div id="pcg-initial-content" class="panel flex flex-col gap-4">
+        <h2 class="text-xl font-bold">Select Files</h2>
+        <p class="text-sm text-gray-400">Select the data CSV and details JSON to begin.</p>
+        <button id="pcg-btn-select-files" class="btn btn-lg btn-success w-full">Select Files</button>
+        <input type="file" id="pcg-files" multiple accept=".csv,.json" class="hidden">
+        <div id="pcg-file-summary" class="text-xs text-gray-500 whitespace-pre-wrap mt-2"></div>
+      </div>
+
+      <div id="pcg-editor-nav" class="panel hidden flex flex-col gap-2">
+        <h3 class="text-sm uppercase tracking-wider text-gray-500 mb-2 font-bold">Editor Sections</h3>
+        <button data-section="metadata" class="btn btn-compact justify-start px-4 active">Metadata</button>
+        <button data-section="channel-info" class="btn btn-compact justify-start px-4">Channel Info</button>
+        <hr class="border-neutral-800 my-2">
+        <button id="pcg-btn-generate" class="btn btn-success w-full mt-2">Generate PDF Chart</button>
+      </div>
+
+      <div id="pcg-status" class="text-xs text-center opacity-60 mt-auto"></div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <section id="pcg-editor-page" class="panel flex-grow overflow-auto hidden relative">
+      <div id="pcg-editor-content-host">
+        <!-- Dynamically injected by app.js -->
+        <div class="flex items-center justify-center h-full text-gray-500 italic">
+          Load files to start editing...
+        </div>
+      </div>
+    </section>
+
+    <!-- Splash when no file loaded -->
+    <div id="pcg-splash" class="flex-grow flex items-center justify-center panel border-dashed border-2 border-neutral-800">
+      <div class="text-center max-w-md">
+        <h2 class="text-3xl font-bold mb-4 opacity-80">No Files Loaded</h2>
+        <p class="text-gray-500 text-lg">Use the sidebar to select your data and details files.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Loading Overlay -->
+  <div id="pcg-loading-overlay" class="hidden fixed inset-0 bg-black/90 z-[100] flex items-center justify-center">
+    <div class="text-center">
+      <div class="spinner mx-auto mb-6"></div>
+      <h2 class="text-2xl font-bold text-white mb-2">Generating PDF...</h2>
+      <p class="text-gray-400">Please wait while we process the data and generate your charts.</p>
+    </div>
+  </div>
+
+  <script src="../assets/app.js"></script>
+  <script>
+    // Clock
+    function updateClock() {
+      const now = new Date();
+      const timeEl = document.getElementById('nav-time');
+      const dateEl = document.getElementById('nav-date');
+      if (timeEl) timeEl.textContent = now.toLocaleTimeString('en-GB', { hour12: false });
+      if (dateEl) dateEl.textContent = now.toLocaleDateString('en-GB');
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // Patch for splash screen visibility
+    const observer = new MutationObserver(() => {
+      const editorPage = document.getElementById('pcg-editor-page');
+      const splash = document.getElementById('pcg-splash');
+      if (editorPage && splash) {
+        splash.style.display = editorPage.classList.contains('hidden') ? 'flex' : 'none';
+      }
+    });
+    const editorPage = document.getElementById('pcg-editor-page');
+    if (editorPage) observer.observe(editorPage, { attributes: true, attributeFilter: ['class'] });
+  </script>
+</body>
+</html>

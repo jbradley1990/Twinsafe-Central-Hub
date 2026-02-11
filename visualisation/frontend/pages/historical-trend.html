@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Historical Trend</title>
+  <script src="../assets/plotly-latest.min.js"></script>
+  <script src="../assets/tailwind.js"></script>
+  <link rel="stylesheet" href="../styles/main.css" />
+  <style>
+    .chart-container {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+    #main-content {
+      display: grid;
+      grid-template-columns: 1fr 400px;
+      gap: 20px;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .hoverlayer .hovertext, .hoverlayer .hoverlabel, .hoverlayer rect:not([fill="none"]) {
+      display: none !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+    .measurement-hit-area {
+      position: absolute;
+      top: 0;
+      width: 10px;
+      height: 100%;
+      cursor: ew-resize;
+      background: transparent;
+      z-index: 100;
+      display: none;
+      transform: translateX(-5px);
+    }
+    .measurement-hit-area:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+  </style>
+</head>
+<body class="body-styles flex flex-col h-screen overflow-hidden">
+  <nav class="flex items-center justify-between px-6 py-3 bg-neutral-900 border-b border-neutral-800 shadow-md flex-shrink-0">
+    <div class="flex items-center gap-6">
+      <img src="../assets/Green Oliver V.png" alt="Logo" class="h-8 cursor-pointer" onclick="location.href='rig-overview.html'">
+      <div class="flex gap-4">
+        <a href="rig-overview.html" class="text-gray-400 font-medium hover:text-white transition-colors">Rig Overview</a>
+        <a href="getting-started.html" class="text-gray-400 font-medium hover:text-white transition-colors">Getting Started</a>
+        <a href="pdf-chart-generation.html" class="text-gray-400 font-medium hover:text-white transition-colors">PDF Generation</a>
+        <a href="historical-trend.html" class="text-white font-medium hover:text-gray-300">Historical Trend</a>
+      </div>
+    </div>
+    <div class="flex flex-col items-end">
+      <div id="nav-time" class="text-lg font-bold leading-none">00:00:00</div>
+      <div id="nav-date" class="text-xs text-gray-400">01/01/2026</div>
+    </div>
+  </nav>
+
+  <main id="main-content" class="flex-1 min-h-0">
+    <div id="chart-panel" class="panel relative overflow-hidden bg-black p-0 border-0">
+        <div id="chart" class="chart-container"></div>
+        <div id="messageOverlay" class="absolute inset-0 flex items-center justify-center p-4 bg-black/90 z-50">
+            <div class="text-center">
+                <h3 class="text-2xl font-bold mb-2">No data loaded</h3>
+                <p class="text-gray-400">Please select a CSV file or start live mode.</p>
+            </div>
+        </div>
+    </div>
+
+    <aside id="uiSidebar" class="flex flex-col gap-5 min-h-0">
+        <!-- Pinned Hover Panel (Channel List) -->
+        <div id="pinnedHover" class="panel flex-1 flex flex-col min-h-0 overflow-hidden hidden">
+            <div id="phTime" class="text-xl font-bold mb-4 sticky top-0 bg-[#1a1a1a] pb-2 z-10"></div>
+            <div id="phRows" class="flex-1 overflow-y-auto space-y-1"></div>
+        </div>
+
+        <!-- Measurement Panel -->
+        <div id="measurementOverlay" class="panel flex-1 flex flex-col min-h-0 overflow-hidden hidden">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold">Measurements</h3>
+                <div class="flex gap-2">
+                    <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-500 text-xs font-bold border border-amber-500/50">A</span>
+                    <span class="px-2 py-0.5 rounded bg-blue-500/20 text-blue-500 text-xs font-bold border border-blue-500/50">B</span>
+                </div>
+            </div>
+            <div id="measurementMeta" class="grid grid-cols-1 gap-1 text-sm text-gray-400 mb-4 p-2 bg-white/5 rounded-lg border border-white/10"></div>
+            <div id="measurementRows" class="flex-1 overflow-y-auto space-y-2 pr-1"></div>
+        </div>
+
+        <!-- Controls -->
+        <div id="controlOverlay" class="panel flex justify-center items-center gap-4 w-full mt-auto !h-auto min-h-[80px] p-4">
+            <label class="btn btn-success cursor-pointer w-1/2 flex items-center justify-center whitespace-nowrap overflow-hidden h-14 !p-0 text-lg font-bold pt-[2px]">
+                <span id="fileInputText" class="truncate">Select CSV</span>
+                <input type="file" id="csvInput" accept=".csv" class="hidden">
+            </label>
+            <button id="measurementToggleBtn" class="btn btn-primary w-1/2 flex items-center justify-center whitespace-nowrap overflow-hidden h-14 !p-0 text-lg font-bold pt-[2px]">
+                <span>Cursors Off</span>
+            </button>
+        </div>
+    </aside>
+  </main>
+
+  <script>
+    // Clock
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('nav-time').textContent = now.toLocaleTimeString('en-GB', { hour12: false });
+      document.getElementById('nav-date').textContent = now.toLocaleDateString('en-GB');
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // Common State
+    const chartDiv = document.getElementById('chart');
+    const messageOverlay = document.getElementById('messageOverlay');
+    const fileInput = document.getElementById('csvInput');
+    const fileInputText = document.getElementById('fileInputText');
+    const measurementToggleBtn = document.getElementById('measurementToggleBtn');
+    const pinnedHover = document.getElementById('pinnedHover');
+    const phTime = document.getElementById('phTime');
+    const phRows = document.getElementById('phRows');
+    const measurementOverlay = document.getElementById('measurementOverlay');
+    const measurementMeta = document.getElementById('measurementMeta');
+    const measurementRows = document.getElementById('measurementRows');
+
+    const hitAreaA = document.createElement('div');
+    hitAreaA.className = 'measurement-hit-area';
+    const hitAreaB = document.createElement('div');
+    hitAreaB.className = 'measurement-hit-area';
+    document.getElementById('chart-panel').appendChild(hitAreaA);
+    document.getElementById('chart-panel').appendChild(hitAreaB);
+
+    const COLORS = ['#FF0000', '#00B050', '#FFA500', '#FFFFFF', '#7030A0', '#00FFFF', '#FF00FF', '#80FF00', '#0000FF'];
+    const UNITS = ['psi', 'psi', 'psi', 'psi', 'psi', 'psi', 'psi', 'psi', '°C'];
+
+    let channelNames = [];
+    let lastTimestamp = null;
+    let cursors = {
+        A: { t: null, x: 0 },
+        B: { t: null, x: 0 }
+    };
+
+    // --- PLOTLY HELPERS ---
+    function buildLayout() {
+        return {
+            margin: { l: 60, r: 20, b: 40, t: 20 },
+            plot_bgcolor: '#000',
+            paper_bgcolor: '#000',
+            showlegend: false,
+            hovermode: 'x unified',
+            hoverlabel: {
+                bgcolor: 'rgba(0,0,0,0)',
+                bordercolor: 'rgba(0,0,0,0)',
+                font: { color: 'rgba(0,0,0,0)', size: 0 }
+            },
+            xaxis: {
+                gridcolor: '#222',
+            tickfont: { color: '#fff' },
+                showspikes: true,
+                spikecolor: '#fff',
+                spikedash: 'dot',
+                spikethickness: 1.5,
+                spikemode: 'across',
+                spikesnap: 'cursor'
+            },
+        yaxis: { title: { text: 'Pressure (psi)', font: { color: '#fff' } }, gridcolor: '#222', tickfont: { color: '#fff' } },
+            yaxis2: { overlaying: 'y', visible: false, range: [-60, 260] }
+        };
+    }
+
+    async function initChart(traces) {
+        await Plotly.newPlot(chartDiv, traces, buildLayout(), { responsive: true, displayModeBar: false });
+        messageOverlay.classList.add('hidden');
+        pinnedHover.classList.remove('hidden');
+        attachEvents();
+        updatePinned(lastTimestamp || new Date());
+    }
+
+    function attachEvents() {
+        chartDiv.on('plotly_hover', e => {
+            const t = new Date(e.points[0].x);
+            updatePinned(t);
+        });
+        chartDiv.on('plotly_unhover', () => updatePinned(lastTimestamp || new Date()));
+        chartDiv.on('plotly_relayout', () => {
+            updateHitAreas();
+        });
+        window.addEventListener('resize', () => {
+            updateHitAreas();
+        });
+    }
+
+    // --- DATA LOADING (CSV) ---
+    fileInput.addEventListener('change', async e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        fileInputText.textContent = file.name;
+
+        const text = await file.text();
+        const lines = text.trim().split('\n');
+        const header = lines[0].split(',');
+
+        channelNames = header.slice(1, 10).map((h, i) => h.trim() || (i === 8 ? 'Ambient Temp' : `Channel ${i+1}`));
+
+        const traces = channelNames.map((name, i) => ({
+            x: [], y: [], name, mode: 'lines', line: { color: COLORS[i], width: 2, dash: i === 8 ? 'dot' : 'solid' },
+            yaxis: i === 8 ? 'y2' : 'y', visible: header[i+1].trim() !== '',
+            hoverinfo: 'none'
+        }));
+
+        lines.slice(1).forEach(line => {
+            const cols = line.split(',');
+            if (cols.length < 2) return;
+            const t = new Date(cols[0]);
+            if (isNaN(t)) return;
+            lastTimestamp = t;
+            for(let i=0; i<9; i++) {
+                const v = parseFloat(cols[i+1]);
+                if (!isNaN(v)) {
+                    traces[i].x.push(t);
+                    traces[i].y.push(v);
+                }
+            }
+        });
+
+        initChart(traces);
+    });
+
+
+    // --- UI UPDATES ---
+    function updatePinned(t) {
+        if (!t) return;
+        phTime.textContent = t.toLocaleString('en-GB', { hour12: false });
+        let html = '';
+        chartDiv.data.forEach((tr, i) => {
+            const val = sampleValue(tr, t);
+            const shown = tr.visible !== 'legendonly';
+            html += `
+                <div class="ph-row flex flex-col p-2 border-b border-white/5 cursor-pointer hover:bg-white/5 transition-colors ${shown ? '' : 'opacity-40'}" onclick="toggleTrace(${i})">
+                    <div class="flex items-center gap-2 text-sm font-medium">
+                        <span style="width:20px; border-top:3px ${i===8?'dotted':'solid'} ${COLORS[i]};"></span>
+                        <span class="truncate">${channelNames[i] || tr.name}</span>
+                    </div>
+                    <div class="text-lg font-bold ml-7">${val !== null ? val.toFixed(1) : '—'} <span class="text-xs font-normal opacity-60">${UNITS[i]}</span></div>
+                </div>
+            `;
+        });
+        phRows.innerHTML = html;
+    }
+
+    function sampleValue(tr, t) {
+        if (!tr.x.length) return null;
+        const target = t.getTime();
+        let lo=0, hi=tr.x.length-1;
+        while(lo<=hi) {
+            let mid=(lo+hi)>>1;
+            let mt=new Date(tr.x[mid]).getTime();
+            if(mt===target) return tr.y[mid];
+            if(mt<target) lo=mid+1; else hi=mid-1;
+        }
+        return tr.y[lo] || tr.y[hi] || null;
+    }
+
+    window.toggleTrace = (i) => {
+        const next = chartDiv.data[i].visible === 'legendonly' ? true : 'legendonly';
+        Plotly.restyle(chartDiv, { visible: next }, [i]).then(() => updatePinned(lastTimestamp));
+    };
+
+    // --- MEASUREMENTS ---
+    measurementToggleBtn.addEventListener('click', () => {
+        measurementOverlay.classList.toggle('hidden');
+        const isHidden = measurementOverlay.classList.contains('hidden');
+        measurementToggleBtn.querySelector('span').textContent = isHidden ? 'Cursors Off' : 'Cursors On';
+        measurementToggleBtn.classList.toggle('btn-blue', !isHidden);
+        measurementToggleBtn.classList.toggle('btn-accent', !isHidden);
+
+        hitAreaA.style.display = isHidden ? 'none' : 'block';
+        hitAreaB.style.display = isHidden ? 'none' : 'block';
+
+        if (!isHidden && !cursors.A.t) {
+            // Initial cursor positions
+            const range = chartDiv.layout.xaxis.range;
+            const start = new Date(range[0]).getTime();
+            const end = new Date(range[1]).getTime();
+            cursors.A.t = new Date(start + (end - start) * 0.25);
+            cursors.B.t = new Date(start + (end - start) * 0.75);
+            updateCursors();
+        }
+    });
+
+    function updateCursors() {
+        const shapes = [
+            { type: 'line', x0: cursors.A.t, x1: cursors.A.t, y0: 0, y1: 1, yref: 'paper', line: { color: '#f59e0b', width: 2, dash: 'dash' } },
+            { type: 'line', x0: cursors.B.t, x1: cursors.B.t, y0: 0, y1: 1, yref: 'paper', line: { color: '#3b82f6', width: 2, dash: 'dash' } }
+        ];
+        Plotly.relayout(chartDiv, { shapes }).then(updateHitAreas);
+        renderMeasurements();
+    }
+
+    function updateHitAreas() {
+        if (measurementOverlay.classList.contains('hidden')) return;
+        const xaxis = chartDiv._fullLayout.xaxis;
+        const l = chartDiv._fullLayout._size.l;
+        const w = chartDiv._fullLayout._size.w;
+
+        [hitAreaA, hitAreaB].forEach((area, i) => {
+            const key = i === 0 ? 'A' : 'B';
+            const t = cursors[key].t instanceof Date ? cursors[key].t.getTime() : new Date(cursors[key].t).getTime();
+            const xPos = xaxis.l2p(t) + l;
+            area.style.left = xPos + 'px';
+        });
+    }
+
+    function renderMeasurements() {
+        if (!cursors.A.t || !cursors.B.t) return;
+
+        const t1 = Math.min(cursors.A.t, cursors.B.t);
+        const t2 = Math.max(cursors.A.t, cursors.B.t);
+
+        const dt = (t2 - t1) / 1000;
+        measurementMeta.innerHTML = `
+            <div class="flex justify-between"><span>Time Δ:</span> <span>${dt.toFixed(1)}s</span></div>
+            <div class="flex justify-between"><span>A:</span> <span>${new Date(t1).toLocaleTimeString('en-GB')}</span></div>
+            <div class="flex justify-between"><span>B:</span> <span>${new Date(t2).toLocaleTimeString('en-GB')}</span></div>
+        `;
+
+        let html = '';
+        chartDiv.data.forEach((tr, i) => {
+            if (tr.visible === 'legendonly') return;
+
+            const stats = getStatsInRange(tr, t1, t2);
+            if (!stats) return;
+
+            const valA = sampleValue(tr, cursors.A.t);
+            const valB = sampleValue(tr, cursors.B.t);
+            const delta = (valA !== null && valB !== null) ? (valB - valA) : 0;
+            const deltaColor = delta > 0 ? 'text-green-500' : (delta < 0 ? 'text-red-500' : 'text-gray-300');
+
+            html += `
+                <div class="measurement-row p-2 bg-white/5 rounded border border-white/10">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="w-3 h-1 rounded-full" style="background:${COLORS[i]}"></span>
+                        <span class="text-xs font-bold truncate">${tr.name}</span>
+                    </div>
+                    <div class="grid grid-cols-4 gap-1 text-center">
+                        <div class="flex flex-col"><span class="text-[9px] text-gray-500 uppercase">Avg</span><span class="text-xs font-bold text-gray-300">${stats.avg.toFixed(1)}</span></div>
+                        <div class="flex flex-col"><span class="text-[9px] text-gray-500 uppercase">Max</span><span class="text-xs font-bold text-gray-300">${stats.max.toFixed(1)}</span></div>
+                        <div class="flex flex-col"><span class="text-[9px] text-gray-500 uppercase">Min</span><span class="text-xs font-bold text-gray-300">${stats.min.toFixed(1)}</span></div>
+                        <div class="flex flex-col"><span class="text-[9px] text-gray-500 uppercase">Δ</span><span class="text-xs font-bold ${deltaColor}">${(delta > 0 ? '+' : '') + delta.toFixed(1)}</span></div>
+                    </div>
+                </div>
+            `;
+        });
+        measurementRows.innerHTML = html || '<div class="text-center py-4 text-gray-500 text-sm">No active channels</div>';
+    }
+
+    function getStatsInRange(tr, t1, t2) {
+        if (!tr.x || !tr.x.length) return null;
+        let sum = 0, count = 0, max = -Infinity, min = Infinity;
+
+        const start = Math.min(t1, t2);
+        const end = Math.max(t1, t2);
+
+        for (let i = 0; i < tr.x.length; i++) {
+            const val_x = tr.x[i];
+            const tx = (val_x instanceof Date) ? val_x.getTime() : new Date(val_x).getTime();
+
+            if (tx >= start && tx <= end) {
+                const v = tr.y[i];
+                if (v === null || isNaN(v)) continue;
+                sum += v;
+                count++;
+                if (v > max) max = v;
+                if (v < min) min = v;
+            }
+        }
+
+        if (count === 0) return null;
+        return { avg: sum / count, max, min, count };
+    }
+
+    // Dragging logic
+    let activeArea = null;
+    [hitAreaA, hitAreaB].forEach((area, i) => {
+        area.onmousedown = e => {
+            activeArea = i === 0 ? 'A' : 'B';
+            e.preventDefault();
+        };
+    });
+
+    window.onmousemove = e => {
+        if (!activeArea) return;
+        const rect = chartDiv.getBoundingClientRect();
+        const xaxis = chartDiv._fullLayout.xaxis;
+        const l = chartDiv._fullLayout._size.l;
+
+        const xPx = e.clientX - rect.left - l;
+        const t = new Date(xaxis.p2l(xPx));
+
+        // Snap to data range
+        const range = xaxis.range;
+        const minT = new Date(range[0]).getTime();
+        const maxT = new Date(range[1]).getTime();
+        const clampedT = Math.max(minT, Math.min(maxT, t.getTime()));
+
+        cursors[activeArea].t = new Date(clampedT);
+        updateCursors();
+    };
+
+    window.onmouseup = () => activeArea = null;
+
+  </script>
+</body>
+</html>

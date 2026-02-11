@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rig Overview</title>
+  <script src="../assets/tailwind.js"></script>
+  <link rel="stylesheet" href="../styles/main.css" />
+  <style>
+    :root {
+      --green: rgba(34, 197, 94, 0.6);
+      --red: rgba(239, 68, 68, 0.7);
+      --yellow: rgba(234, 179, 8, 0.9);
+      --blue: rgba(59, 130, 246, 0.7);
+    }
+    .rig-card {
+      background: var(--color-bg-secondary);
+      border: 2px solid var(--color-border-primary);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-lg);
+      transition: all var(--transition-normal);
+      cursor: pointer;
+    }
+    .rig-card:hover {
+      background: var(--color-bg-tertiary);
+      transform: translateY(-3px);
+    }
+    .rig-card.online { border-color: var(--blue); box-shadow: 0 0 10px var(--blue); }
+    .rig-card.offline { border-color: var(--yellow); box-shadow: 0 0 10px var(--yellow); }
+    .rig-card.free { border-color: var(--green); box-shadow: 0 0 10px var(--green); }
+    .rig-card.busy { border-color: var(--red); box-shadow: 0 0 10px var(--red); }
+  </style>
+</head>
+<body class="body-styles flex flex-col h-screen">
+  <nav class="flex items-center justify-between px-6 py-3 bg-neutral-900 border-b border-neutral-800 shadow-md">
+    <div class="flex items-center gap-6">
+      <img src="../assets/Green Oliver V.png" alt="Logo" class="h-8 cursor-pointer" onclick="location.href='rig-overview.html'">
+      <div class="flex gap-4">
+        <a href="rig-overview.html" class="text-white font-medium hover:text-gray-300">Rig Overview</a>
+        <a href="getting-started.html" class="text-gray-400 font-medium hover:text-white transition-colors">Getting Started</a>
+        <a href="pdf-chart-generation.html" class="text-gray-400 font-medium hover:text-white transition-colors">PDF Generation</a>
+        <a href="historical-trend.html" class="text-gray-400 font-medium hover:text-white transition-colors">Historical Trend</a>
+      </div>
+    </div>
+    <div class="flex flex-col items-end">
+      <div id="nav-time" class="text-lg font-bold leading-none">00:00:00</div>
+      <div id="nav-date" class="text-xs text-gray-400">01/01/2026</div>
+    </div>
+  </nav>
+
+  <main class="flex-grow p-10 overflow-auto">
+    <h1 class="text-4xl font-bold mb-8">Rig Overview</h1>
+    <div id="rig-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-7xl mx-auto">
+      <!-- HYDRO 1 -->
+      <div class="rig-card" data-id="hydrorig1" data-url="http://10.1.6.101:8080/webvisu.htm">
+        <h2 class="text-2xl font-bold mb-4">Hydrostatic Rig 1</h2>
+        <div class="grid grid-cols-[120px_1fr] gap-y-2 text-lg">
+          <div class="text-gray-400">User</div>    <div id="hydrorig1-user">—</div>
+          <div class="text-gray-400">OTS No</div>  <div id="hydrorig1-ref">—</div>
+          <div class="text-gray-400">Test</div>    <div id="hydrorig1-test">—</div>
+          <div class="text-gray-400">Prompt</div>  <div id="hydrorig1-prompt">—</div>
+        </div>
+      </div>
+      <!-- HYDRO 2 -->
+      <div class="rig-card" data-id="hydrorig2" data-url="http://10.1.6.102:8080/webvisu.htm">
+        <h2 class="text-2xl font-bold mb-4">Hydrostatic Rig 2</h2>
+        <div class="grid grid-cols-[120px_1fr] gap-y-2 text-lg">
+          <div class="text-gray-400">User</div>    <div id="hydrorig2-user">—</div>
+          <div class="text-gray-400">OTS No</div>  <div id="hydrorig2-ref">—</div>
+          <div class="text-gray-400">Test</div>    <div id="hydrorig2-test">—</div>
+          <div class="text-gray-400">Prompt</div>  <div id="hydrorig2-prompt">—</div>
+        </div>
+      </div>
+      <!-- GAS 1 -->
+      <div class="rig-card" data-id="gasrig1" data-url="http://10.1.6.103:8080/webvisu.htm">
+        <h2 class="text-2xl font-bold mb-4">Gas Rig 1</h2>
+        <div class="grid grid-cols-[120px_1fr] gap-y-2 text-lg">
+          <div class="text-gray-400">User</div>    <div id="gasrig1-user">—</div>
+          <div class="text-gray-400">OTS No</div>  <div id="gasrig1-ref">—</div>
+          <div class="text-gray-400">Test</div>    <div id="gasrig1-test">—</div>
+          <div class="text-gray-400">Prompt</div>  <div id="gasrig1-prompt">—</div>
+        </div>
+      </div>
+      <!-- GAS 2 -->
+      <div class="rig-card" data-id="gasrig2" data-url="http://10.1.6.104:8080/webvisu.htm">
+        <h2 class="text-2xl font-bold mb-4">Gas Rig 2</h2>
+        <div class="grid grid-cols-[120px_1fr] gap-y-2 text-lg">
+          <div class="text-gray-400">User</div>    <div id="gasrig2-user">—</div>
+          <div class="text-gray-400">OTS No</div>  <div id="gasrig2-ref">—</div>
+          <div class="text-gray-400">Test</div>    <div id="gasrig2-test">—</div>
+          <div class="text-gray-400">Prompt</div>  <div id="gasrig2-prompt">—</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Clock
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('nav-time').textContent = now.toLocaleTimeString('en-GB', { hour12: false });
+      document.getElementById('nav-date').textContent = now.toLocaleDateString('en-GB');
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // Rig Status Logic
+    const rigs = [
+      { id:"hydrorig1", host:"10.1.6.101:8080" },
+      { id:"hydrorig2", host:"10.1.6.102:8080" },
+      { id:"gasrig1",   host:"10.1.6.103:8080" },
+      { id:"gasrig2",   host:"10.1.6.104:8080" },
+    ];
+
+    document.querySelectorAll(".rig-card").forEach(card => {
+      card.addEventListener("click", () => {
+        const url = card.getAttribute("data-url");
+        if (url) window.location.href = url;
+      });
+    });
+
+    function normalise(json){
+      if (!json) return null;
+      if (json.user) return json;
+      const keys = Object.keys(json);
+      return json[keys[0]] || null;
+    }
+
+    async function updateRig(r){
+      const card = document.querySelector(`.rig-card[data-id="${r.id}"]`);
+      try {
+        const res = await fetch(`/api/rig-json?host=${encodeURIComponent(r.host)}&ts=${Date.now()}`);
+        if(!res.ok) throw new Error("No data");
+        const raw = await res.json();
+        const data = normalise(raw);
+        card.classList.add("online");
+        card.classList.remove("offline");
+        if(!data) {
+          card.classList.remove("busy");
+          card.classList.add("free");
+          return;
+        }
+        document.getElementById(`${r.id}-user`).textContent   = data.user || "—";
+        document.getElementById(`${r.id}-ref`).textContent    = data.rdReference || "—";
+        document.getElementById(`${r.id}-test`).textContent   = data.testTitle || "—";
+        document.getElementById(`${r.id}-prompt`).textContent = data.currentPrompt || "—";
+        const busy = (data.user || "").trim() !== "";
+        card.classList.toggle("free", !busy);
+        card.classList.toggle("busy", busy);
+      } catch(err) {
+        if (r.id === "hydrorig1") {
+          card.classList.remove("busy", "online", "offline");
+          card.classList.add("free");
+        } else {
+          card.classList.remove("busy", "free", "online");
+          card.classList.add("offline");
+        }
+      }
+    }
+
+    function refreshAll(){ rigs.forEach(updateRig); }
+    refreshAll();
+    setInterval(refreshAll, 5000);
+  </script>
+</body>
+</html>
