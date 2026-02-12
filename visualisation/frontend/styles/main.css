@@ -64,7 +64,7 @@
   --color-accent-light: rgba(102, 119, 120, 0.35);
 
   --color-success: #16a34a;
-  --color-success-dark: #15803d;
+  --color-success-dark: #016644;
   --color-danger: #dc2626;
   --color-danger-dark: #b91c1c;
   --color-warning: #facc15;
@@ -171,8 +171,8 @@ body.body-styles {
 }
 
 .btn.btn-success {
-  background: var(--color-success);
-  border-color: var(--color-success);
+  background: var(--color-success-dark);
+  border-color: var(--color-success-dark);
   color: white;
 }
 
