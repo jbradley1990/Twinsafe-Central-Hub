@@ -108,6 +108,9 @@ class OpcUaWrapper:
         if key == "ots_no": return "—"
         if key == "test_name": return "—"
         if key == "current_user_fullname": return ""
+        if key == "logged_in": return False
+        if key == "start": return False
+        if key == "update": return True
         return None
 
     def write(self, key: str, value: Any) -> bool:
@@ -143,14 +146,21 @@ def poll_rig(rig_id: str, wrapper: OpcUaWrapper):
     ots_no = wrapper.read("ots_no")
     test_name = wrapper.read("test_name")
     logged_in = wrapper.read("logged_in")
+    start = wrapper.read("start")
+    update_val = wrapper.read("update")
 
     # Check current connection state
     connected = wrapper.connected
+
+    # if update_val is false it means there is an update. if true then nothing
+    update_pending = (update_val == False)
 
     if not connected:
         color_state = "orange"
     elif not logged_in:
         color_state = "green"
+    elif not start:
+        color_state = "blue"
     else:
         color_state = "red"
 
@@ -160,7 +170,8 @@ def poll_rig(rig_id: str, wrapper: OpcUaWrapper):
             "ots_no": ots_no,
             "test_name": test_name,
             "color_state": color_state,
-            "connected": connected
+            "connected": connected,
+            "update_pending": update_pending
         }
 
 def background_poll_loop():
