@@ -28,6 +28,29 @@
     .rig-card.status-green { border-color: var(--green); box-shadow: 0 0 15px var(--green); }
     .rig-card.status-red { border-color: var(--red); box-shadow: 0 0 15px var(--red); }
     .rig-card.status-orange { border-color: var(--orange); box-shadow: 0 0 15px var(--orange); }
+    .rig-card.status-blue { border-color: var(--blue); box-shadow: 0 0 15px var(--blue); }
+
+    .update-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: #f59e0b;
+      color: #000;
+      font-weight: 800;
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.7; }
+      100% { opacity: 1; }
+    }
   </style>
 </head>
 <body class="body-styles flex flex-col h-screen">
@@ -51,7 +74,8 @@
     <h1 class="text-4xl font-bold mb-8">Rig Overview</h1>
     <div id="rig-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-7xl mx-auto">
       <!-- HYDRO 1 -->
-      <div class="rig-card" data-id="hydrorig1" data-url="http://10.1.6.101:8080/webvisu.htm">
+      <div class="rig-card relative" data-id="hydrorig1" data-url="http://10.1.6.101:8080/webvisu.htm">
+        <div id="hydrorig1-update" class="update-badge hidden">Update Pending</div>
         <h2 class="text-2xl font-bold mb-4">Hydrostatic Rig 1</h2>
         <div class="grid grid-cols-[120px_1fr] gap-y-2 text-lg">
           <div class="text-gray-400">User</div>    <div id="hydrorig1-user">—</div>
@@ -60,7 +84,8 @@
         </div>
       </div>
       <!-- HYDRO 2 -->
-      <div class="rig-card" data-id="hydrorig2" data-url="http://10.1.6.102:8080/webvisu.htm">
+      <div class="rig-card relative" data-id="hydrorig2" data-url="http://10.1.6.102:8080/webvisu.htm">
+        <div id="hydrorig2-update" class="update-badge hidden">Update Pending</div>
         <h2 class="text-2xl font-bold mb-4">Hydrostatic Rig 2</h2>
         <div class="grid grid-cols-[120px_1fr] gap-y-2 text-lg">
           <div class="text-gray-400">User</div>    <div id="hydrorig2-user">—</div>
@@ -69,7 +94,8 @@
         </div>
       </div>
       <!-- GAS 1 -->
-      <div class="rig-card" data-id="gasrig1" data-url="http://10.1.6.103:8080/webvisu.htm">
+      <div class="rig-card relative" data-id="gasrig1" data-url="http://10.1.6.103:8080/webvisu.htm">
+        <div id="gasrig1-update" class="update-badge hidden">Update Pending</div>
         <h2 class="text-2xl font-bold mb-4">Gas Rig 1</h2>
         <div class="grid grid-cols-[120px_1fr] gap-y-2 text-lg">
           <div class="text-gray-400">User</div>    <div id="gasrig1-user">—</div>
@@ -78,7 +104,8 @@
         </div>
       </div>
       <!-- GAS 2 -->
-      <div class="rig-card" data-id="gasrig2" data-url="http://10.1.6.104:8080/webvisu.htm">
+      <div class="rig-card relative" data-id="gasrig2" data-url="http://10.1.6.104:8080/webvisu.htm">
+        <div id="gasrig2-update" class="update-badge hidden">Update Pending</div>
         <h2 class="text-2xl font-bold mb-4">Gas Rig 2</h2>
         <div class="grid grid-cols-[120px_1fr] gap-y-2 text-lg">
           <div class="text-gray-400">User</div>    <div id="gasrig2-user">—</div>
@@ -126,20 +153,30 @@
           document.getElementById(`${id}-test`).textContent = rigData.test_name || "—";
 
           // Update status colors
-          card.classList.remove("status-green", "status-red", "status-orange");
+          card.classList.remove("status-green", "status-red", "status-orange", "status-blue");
           if (rigData.color_state === "green") card.classList.add("status-green");
           else if (rigData.color_state === "red") card.classList.add("status-red");
+          else if (rigData.color_state === "blue") card.classList.add("status-blue");
           else card.classList.add("status-orange");
+
+          // Update pending signifier
+          const updateBadge = document.getElementById(`${id}-update`);
+          if (updateBadge) {
+            if (rigData.update_pending) updateBadge.classList.remove("hidden");
+            else updateBadge.classList.add("hidden");
+          }
         });
       } catch(err) {
         console.error("Failed to fetch rig status:", err);
         // Set all to orange on error
         rigIds.forEach(id => {
           const card = document.querySelector(`.rig-card[data-id="${id}"]`);
+          const updateBadge = document.getElementById(`${id}-update`);
           if(card) {
-            card.classList.remove("status-green", "status-red");
+            card.classList.remove("status-green", "status-red", "status-blue");
             card.classList.add("status-orange");
           }
+          if(updateBadge) updateBadge.classList.add("hidden");
         });
       }
     }

@@ -22,6 +22,8 @@ NODE_IDS: Dict[str, str] = {
     "ots_no": "ns=4;s=|var|CODESYS Control for Linux ARM64 SL.DLS.GVL.asTestDetails[2,1]",
     "test_name": "ns=4;s=|var|CODESYS Control for Linux ARM64 SL.DLS.GVL.sTestName",
     "logged_in": "ns=4;s=|var|CODESYS Control for Linux ARM64 SL.DLS.GVL.xLoggedIn",
+    "start": "ns=4;s=|var|CODESYS Control for Linux ARM64 SL.DLS.GVL.xStart",
+    "update": "ns=4;s=|var|CODESYS Control for Linux ARM64 SL.DLS.GVL.xUpdate",
 }
 
 CHANNEL_NAMES = {
