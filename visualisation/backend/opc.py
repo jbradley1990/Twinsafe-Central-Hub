@@ -156,13 +156,13 @@ def poll_rig(rig_id: str, wrapper: OpcUaWrapper):
     update_pending = (update_val == False)
 
     if not connected:
-        color_state = "orange"
+        color_state = "red"
     elif not logged_in:
         color_state = "green"
     elif not start:
-        color_state = "blue"
+        color_state = "green"
     else:
-        color_state = "red"
+        color_state = "orange"
 
     with cache_lock:
         rig_data_cache[rig_id] = {
