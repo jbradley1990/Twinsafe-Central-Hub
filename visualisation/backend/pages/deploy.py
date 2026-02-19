@@ -43,12 +43,21 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 @router.websocket("/api/deploy/ws")
-async def websocket_endpoint(websocket: WebSocket, password: str = Query(...)):
+async def websocket_endpoint(websocket: WebSocket):
+    # We use manual query param extraction to handle authentication after acceptance
+    # if needed, or just to provide better logging.
+    password = websocket.query_params.get("password")
+
     if password != DEPLOY_PASSWORD:
-        await websocket.close(code=4001) # Unauthorized
+        logger.warning(f"WebSocket authentication failed from {websocket.client.host}")
+        # To avoid 403 Forbidden handshake rejection, we accept then close with a code
+        await websocket.accept()
+        await websocket.send_text("ERROR: WebSocket Authentication Failed. Invalid password.")
+        await websocket.close(code=4001)
         return
 
     await manager.connect(websocket)
+    logger.info(f"WebSocket connected from {websocket.client.host}")
     try:
         while True:
             # Keep the connection open and handle incoming messages if any

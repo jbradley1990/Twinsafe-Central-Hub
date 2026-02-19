@@ -207,7 +207,8 @@
 
             ws.onclose = (event) => {
                 if (event.code === 4001) {
-                    addLog('Authentication failed for WebSocket.', '#f00');
+                    addLog('AUTHENTICATION FAILED: The provided password for WebSocket connection is incorrect.', '#f00');
+                    // We don't retry if authentication failed
                     return;
                 }
                 addLog('Disconnected from server. Retrying in 5s...', '#a50');
