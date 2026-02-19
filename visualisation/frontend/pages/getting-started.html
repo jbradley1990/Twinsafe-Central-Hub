@@ -71,8 +71,8 @@
     <a href="#trend" class="nav-sub-link">Trend</a>
     <a href="#previous-pdf" class="nav-sub-link">Previous PDF</a>
     <a href="#finding-test-results" class="nav-sub-link">Finding Test Results</a>
-    <a href="#test-log-sheet-example" class="nav-sub-link">Test Log Sheet Example</a>
     <a href="#unique-chart-id" class="nav-sub-link">Unique Chart ID</a>
+    <a href="#test-log-sheet-example" class="nav-sub-link">Using Test Log Sheets</a>
   </div>
 
   <main class="flex-grow p-6 overflow-hidden">
@@ -245,15 +245,11 @@ Sales Order
                     <ul class="space-y-4 text-neutral-300">
                       <li class="flex gap-3">
                         <span class="text-accent font-bold">•</span>
-                        <span><strong>First Row Completion:</strong> Ensure the first row of the log sheet is fully completed before starting.</span>
+                        <span>Load the <strong>Test Details</strong> and input <strong>Unique Numbers</strong> into the system. Ensure the details on the system match the details at the top of the log sheet exactly.</span>
                       </li>
                       <li class="flex gap-3">
                         <span class="text-accent font-bold">•</span>
-                        <span><strong>Data Matching:</strong> Load the <strong>Test Details</strong> and input <strong>Unique Numbers</strong> into the system. Ensure the details on the system match the details at the top of the log sheet exactly.</span>
-                      </li>
-                      <li class="flex gap-3">
-                        <span class="text-accent font-bold">•</span>
-                        <span><strong>Parameter Verification:</strong> Always confirm that the <strong>Procedure Ref</strong>, <strong>Test Name</strong>, <strong>Hold Time</strong>, and <strong>Test Pressure</strong> for your test match the parameters shown in the "Testing" tab's start dialog.</span>
+                        <span>Always confirm that the <strong>Procedure Ref</strong>, <strong>Test Name</strong>, <strong>Hold Time</strong>, and <strong>Test Pressure</strong> for your test match the parameters shown in the start dialog.</span>
                       </li>
                     </ul>
                   </div>
@@ -284,33 +280,36 @@ Sales Order
                 </div>
               </div>
 
-              <div class="bg-neutral-800/50 p-8 rounded-xl border border-neutral-700">
-                <h2 class="text-2xl font-semibold mb-6">Final Checklist</h2>
+              <div class="space-y-6">
+                <h2 class="text-2xl font-semibold mb-4 text-accent">Final Checklist</h2>
                 <p class="text-neutral-400 mb-6">Before finishing, ensure the following fields are also completed on the log sheet:</p>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div class="flex items-center gap-3 bg-neutral-900/50 p-4 rounded-lg border border-neutral-700">
-                    <div class="w-2 h-2 bg-accent rounded-full"></div>
-                    <span class="font-medium">Pressure Transducer No</span>
-                  </div>
-                  <div class="flex items-center gap-3 bg-neutral-900/50 p-4 rounded-lg border border-neutral-700">
-                    <div class="w-2 h-2 bg-accent rounded-full"></div>
-                    <span class="font-medium">Gauge No (if used)</span>
-                  </div>
-                  <div class="flex items-center gap-3 bg-neutral-900/50 p-4 rounded-lg border border-neutral-700">
-                    <div class="w-2 h-2 bg-accent rounded-full"></div>
-                    <span class="font-medium">Test Technician Name</span>
-                  </div>
-                  <div class="flex items-center gap-3 bg-neutral-900/50 p-4 rounded-lg border border-neutral-700">
-                    <div class="w-2 h-2 bg-accent rounded-full"></div>
-                    <span class="font-medium">Customer Witness Name/Signature (if used)</span>
-                  </div>
-                </div>
+                <li class="flex gap-3">
+                  <span class="text-accent font-bold">•</span>
+                  <span>Pressure Transducer No</span>
+                </li>
+                <li class="flex gap-3">
+                  <span class="text-accent font-bold">•</span>
+                  <span>Gauge No (if used)</span>
+                </li>
+                <li class="flex gap-3">
+                  <span class="text-accent font-bold">•</span>
+                  <span>Test Technician Name</span>
+                </li>
+                <li class="flex gap-3">
+                  <span class="text-accent font-bold">•</span>
+                  <span>Customer Witness Name/Signature (if used)</span>
+                </li>
               </div>
             </div>
           </section>
 
           <section id="unique-chart-id" class="guide-section">
             <h1 class="text-4xl font-bold mb-8">Unique Chart ID</h1>
+            
+            <p class="text-neutral-300 text-lg mb-10 leading-relaxed">
+              The examples below show where to locate the Unique Chart ID, highlighted in red. Please record this ID on your test log sheet, as it can be used to quickly search for any files associated with this test. All chart and data file names automatically end with this Unique Chart ID (<code class="text-accent bg-black px-1.5 py-0.5 rounded font-mono text-sm">dd-mm-yyyy_hh-mm-ss</code>).
+            </p>
+
             <div class="space-y-12">
               <div class="space-y-4">
                 <h2 class="text-2xl font-semibold text-accent">Example on Chart</h2>
