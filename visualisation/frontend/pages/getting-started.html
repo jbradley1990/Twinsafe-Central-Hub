@@ -71,6 +71,8 @@
     <a href="#trend" class="nav-sub-link">Trend</a>
     <a href="#previous-pdf" class="nav-sub-link">Previous PDF</a>
     <a href="#finding-test-results" class="nav-sub-link">Finding Test Results</a>
+    <a href="#unique-chart-id" class="nav-sub-link">Unique Chart ID</a>
+    <a href="#test-log-sheet-example" class="nav-sub-link">Using Test Log Sheets</a>
   </div>
 
   <main class="flex-grow p-6 overflow-hidden">
@@ -224,6 +226,102 @@ Sales Order
                     <div class="flex justify-between"><span class="text-neutral-400">Valve 3:</span> <span class="text-red-500 font-semibold">Manually Failed</span></div>
                     <div class="flex justify-between"><span class="text-neutral-400">Valve 4:</span> <span class="text-red-500 font-semibold">Overpressurised</span></div>
                   </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section id="test-log-sheet-example" class="guide-section">
+            <h1 class="text-4xl font-bold mb-8">Test Log Sheet Example</h1>
+            <div class="space-y-12">
+              <div class="rounded-xl border border-neutral-700 shadow-2xl bg-black overflow-hidden">
+                <img src="../assets/getting-started-media/OTS_Test_Log_Sheet_Example.png" alt="OTS Test Log Sheet Example" class="w-full h-auto block">
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div class="space-y-6">
+                  <div>
+                    <h2 class="text-2xl font-semibold mb-4 text-accent">Initial Setup & Synchronization</h2>
+                    <ul class="space-y-4 text-neutral-300">
+                      <li class="flex gap-3">
+                        <span class="text-accent font-bold">•</span>
+                        <span>Load the <strong>Test Details</strong> and input <strong>Unique Numbers</strong> into the system. Ensure the details on the system match the details at the top of the log sheet exactly.</span>
+                      </li>
+                      <li class="flex gap-3">
+                        <span class="text-accent font-bold">•</span>
+                        <span>Always confirm that the <strong>Procedure Ref</strong>, <strong>Test Name</strong>, <strong>Hold Time</strong>, and <strong>Test Pressure</strong> for your test match the parameters shown in the start dialog.</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div class="space-y-6">
+                  <div>
+                    <h2 class="text-2xl font-semibold mb-4 text-accent">During & After Test</h2>
+                    <ul class="space-y-4 text-neutral-300">
+                      <li class="flex gap-3">
+                        <span class="text-accent font-bold">•</span>
+                        <span><strong>Breakout (lbf-ft):</strong> Record your breakout value on both the physical log sheet and in the system's pop-up dialog at the end of the test.</span>
+                      </li>
+                      <li class="flex gap-3">
+                        <span class="text-accent font-bold">•</span>
+                        <span><strong>Comments:</strong> Use this field for any quick notes or observations regarding the test run.</span>
+                      </li>
+                      <li class="flex gap-3">
+                        <span class="text-accent font-bold">•</span>
+                        <span><strong>Unique Chart ID:</strong> This is the <code>dd-mm-yyyy_hh-mm-ss</code> serial number generated at the start of the test. (See the <strong>Unique Chart ID</strong> tab for examples of where to find this and where it's referenced).</span>
+                      </li>
+                      <li class="flex gap-3">
+                        <span class="text-accent font-bold">•</span>
+                        <span><strong>Signature (Sig):</strong> Please initial the log sheet after the test is completed.</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-6">
+                <h2 class="text-2xl font-semibold mb-4 text-accent">Final Checklist</h2>
+                <p class="text-neutral-400 mb-6">Before finishing, ensure the following fields are also completed on the log sheet:</p>
+                <li class="flex gap-3">
+                  <span class="text-accent font-bold">•</span>
+                  <span>Pressure Transducer No</span>
+                </li>
+                <li class="flex gap-3">
+                  <span class="text-accent font-bold">•</span>
+                  <span>Gauge No (if used)</span>
+                </li>
+                <li class="flex gap-3">
+                  <span class="text-accent font-bold">•</span>
+                  <span>Test Technician Name</span>
+                </li>
+                <li class="flex gap-3">
+                  <span class="text-accent font-bold">•</span>
+                  <span>Customer Witness Name/Signature (if used)</span>
+                </li>
+              </div>
+            </div>
+          </section>
+
+          <section id="unique-chart-id" class="guide-section">
+            <h1 class="text-4xl font-bold mb-8">Unique Chart ID</h1>
+            
+            <p class="text-neutral-300 text-lg mb-10 leading-relaxed">
+              The examples below show where to locate the Unique Chart ID, highlighted in red. Please record this ID on your test log sheet, as it can be used to quickly search for any files associated with this test. All chart and data file names automatically end with this Unique Chart ID (<code class="text-accent bg-black px-1.5 py-0.5 rounded font-mono text-sm">dd-mm-yyyy_hh-mm-ss</code>).
+            </p>
+
+            <div class="space-y-12">
+              <div class="space-y-4">
+                <h2 class="text-2xl font-semibold text-accent">Example on Chart</h2>
+                <div class="rounded-xl border border-neutral-700 shadow-2xl bg-black overflow-hidden">
+                  <img src="../assets/getting-started-media/chart_serial_number_example.jpg" alt="Example on Chart" class="w-full h-auto block">
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <h2 class="text-2xl font-semibold text-accent">Example on DLS</h2>
+                <div class="rounded-xl border border-neutral-700 shadow-2xl bg-black overflow-hidden">
+                  <img src="../assets/getting-started-media/dls_serial_number_example.jpg" alt="Example on DLS" class="w-full h-auto block">
                 </div>
               </div>
             </div>
