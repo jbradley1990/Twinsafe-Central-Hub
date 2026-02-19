@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deploy Changes</title>
+    <script src="../assets/tailwind.js"></script>
+    <link rel="stylesheet" href="../styles/main.css">
+    <style>
+        .console-container {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            background: #000;
+            color: #0f0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-y: auto;
+            flex-grow: 1;
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+            border: 1px solid #333;
+        }
+        .console-line {
+            margin-bottom: 0.25rem;
+            white-space: pre-wrap;
+        }
+        .rig-checkbox {
+            display: none;
+        }
+        .rig-label {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .rig-checkbox:checked + .rig-label {
+            background: #016644;
+            border-color: #018858;
+            box-shadow: 0 0 10px rgba(1, 102, 68, 0.5);
+        }
+        #loginOverlay {
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body class="body-styles flex flex-col h-screen overflow-hidden">
+    <!-- Login Overlay -->
+    <div id="loginOverlay" class="fixed inset-0 flex items-center justify-center p-4">
+        <div class="panel w-full max-w-md p-8">
+            <h2 class="text-2xl font-bold mb-6 text-center text-white">Engineering Access</h2>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-1">Username</label>
+                    <input type="text" id="username" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500" value="mechatronics" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-1">Password</label>
+                    <input type="password" id="password" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500" required autofocus>
+                </div>
+                <button type="submit" class="btn btn-blue w-full py-3 text-lg font-bold mt-4">Login</button>
+                <p id="loginError" class="text-red-500 text-sm mt-2 hidden text-center">Invalid password</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Navigation -->
+    <nav class="flex items-center justify-between px-6 py-3 bg-neutral-900 border-b border-neutral-800 shadow-md flex-shrink-0">
+        <div class="flex items-center gap-6">
+            <img src="../assets/Green Oliver V.png" alt="Logo" class="h-8 cursor-pointer" onclick="location.href='rig-overview.html'">
+            <div class="flex gap-4">
+                <a href="rig-overview.html" class="text-gray-400 font-medium hover:text-white transition-colors">Rig Overview</a>
+                <a href="getting-started.html" class="text-gray-400 font-medium hover:text-white transition-colors">Getting Started</a>
+                <a href="pdf-chart-generation.html" class="text-gray-400 font-medium hover:text-white transition-colors">PDF Generation</a>
+                <a href="historical-trend.html" class="text-gray-400 font-medium hover:text-white transition-colors">Historical Trend</a>
+                <a href="deploy.html" class="text-white font-medium hover:text-gray-300">Deploy</a>
+            </div>
+        </div>
+        <div class="flex flex-col items-end">
+            <div id="nav-time" class="text-lg font-bold leading-none">00:00:00</div>
+            <div id="nav-date" class="text-xs text-gray-400">01/01/2026</div>
+        </div>
+    </nav>
+
+    <main class="flex-1 flex gap-5 p-5 min-h-0">
+        <!-- Console Log Column -->
+        <div class="flex-[2] flex flex-col min-h-0">
+            <h2 class="text-xl font-bold mb-4">Deployment Log</h2>
+            <div id="console" class="console-container">
+                <div class="console-line text-gray-500 italic">Waiting for connection...</div>
+            </div>
+        </div>
+
+        <!-- Controls Column -->
+        <aside class="flex-1 flex flex-col gap-5 min-h-0 overflow-y-auto">
+            <div class="panel p-6">
+                <h3 class="text-lg font-bold mb-4">1. Select Targets</h3>
+                <div class="grid grid-cols-1 gap-2">
+                    <div class="rig-item">
+                        <input type="checkbox" id="hydrorig1" class="rig-checkbox" value="hydrorig1">
+                        <label for="hydrorig1" class="rig-label">Hydrostatic Rig 1</label>
+                    </div>
+                    <div class="rig-item">
+                        <input type="checkbox" id="hydrorig2" class="rig-checkbox" value="hydrorig2">
+                        <label for="hydrorig2" class="rig-label">Hydrostatic Rig 2</label>
+                    </div>
+                    <div class="rig-item">
+                        <input type="checkbox" id="gasrig1" class="rig-checkbox" value="gasrig1">
+                        <label for="gasrig1" class="rig-label">Gas Rig 1</label>
+                    </div>
+                    <div class="rig-item">
+                        <input type="checkbox" id="gasrig2" class="rig-checkbox" value="gasrig2">
+                        <label for="gasrig2" class="rig-label">Gas Rig 2</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel p-6">
+                <h3 class="text-lg font-bold mb-4">2. Upload Files</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 uppercase mb-1">Archive.prj</label>
+                        <input type="file" id="prjFile" accept=".prj" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-500/20 file:text-blue-500 hover:file:bg-blue-500/30">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 uppercase mb-1">.app File</label>
+                        <input type="file" id="appFile" accept=".app" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-500/20 file:text-blue-500 hover:file:bg-blue-500/30">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 uppercase mb-1">.crc File</label>
+                        <input type="file" id="crcFile" accept=".crc" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-500/20 file:text-blue-500 hover:file:bg-blue-500/30">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 uppercase mb-1">visu Folder (zip, optional)</label>
+                        <input type="file" id="visuZip" accept=".zip" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-500/20 file:text-gray-400 hover:file:bg-gray-500/30">
+                    </div>
+                </div>
+            </div>
+
+            <button id="deployBtn" class="btn btn-blue py-4 text-xl font-bold mt-auto shadow-lg shadow-blue-500/20">
+                START DEPLOYMENT
+            </button>
+        </aside>
+    </main>
+
+    <script>
+        // Clock
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('nav-time').textContent = now.toLocaleTimeString('en-GB', { hour12: false });
+            document.getElementById('nav-date').textContent = now.toLocaleDateString('en-GB');
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        const loginOverlay = document.getElementById('loginOverlay');
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
+        const consoleDiv = document.getElementById('console');
+        const deployBtn = document.getElementById('deployBtn');
+
+        let sessionPassword = '';
+        let ws = null;
+
+        // Login Handler
+        loginForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const password = document.getElementById('password').value;
+
+            if (!password) return;
+
+            sessionPassword = password;
+            loginOverlay.classList.add('hidden');
+            initWebSocket();
+        };
+
+        function addLog(message, color = '') {
+            const line = document.createElement('div');
+            line.className = 'console-line';
+            if (color) line.style.color = color;
+            line.textContent = `[${new Date().toLocaleTimeString('en-GB')}] ${message}`;
+            consoleDiv.appendChild(line);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+
+        function initWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(`${protocol}//${window.location.host}/api/deploy/ws?password=${encodeURIComponent(sessionPassword)}`);
+
+            ws.onopen = () => {
+                consoleDiv.innerHTML = '';
+                addLog('Connected to deployment server.', '#0f0');
+            };
+
+            ws.onmessage = (event) => {
+                const msg = event.data;
+                let color = '';
+                if (msg.includes('ERROR')) color = '#f00';
+                else if (msg.includes('FAILED')) color = '#f00';
+                else if (msg.includes('complete')) color = '#0f0';
+                else if (msg.startsWith('==>')) color = '#3b82f6';
+                addLog(msg, color);
+            };
+
+            ws.onclose = (event) => {
+                if (event.code === 4001) {
+                    addLog('Authentication failed for WebSocket.', '#f00');
+                    return;
+                }
+                addLog('Disconnected from server. Retrying in 5s...', '#a50');
+                setTimeout(initWebSocket, 5000);
+            };
+        }
+
+        deployBtn.onclick = async () => {
+            const prjFile = document.getElementById('prjFile').files[0];
+            const appFile = document.getElementById('appFile').files[0];
+            const crcFile = document.getElementById('crcFile').files[0];
+            const visuZip = document.getElementById('visuZip').files[0];
+
+            const selectedRigs = Array.from(document.querySelectorAll('.rig-checkbox:checked')).map(cb => cb.value);
+
+            if (selectedRigs.length === 0) {
+                alert('Please select at least one rig.');
+                return;
+            }
+
+            if (!prjFile || !appFile || !crcFile) {
+                alert('Please select all required files (.prj, .app, .crc).');
+                return;
+            }
+
+            deployBtn.disabled = true;
+            deployBtn.textContent = 'DEPLOYING...';
+            deployBtn.classList.add('opacity-50');
+
+            try {
+                addLog('>>> Uploading files...', '#3b82f6');
+
+                const formData = new FormData();
+                formData.append('password', sessionPassword);
+                formData.append('prj_file', prjFile);
+                formData.append('app_file', appFile);
+                formData.append('crc_file', crcFile);
+                if (visuZip) formData.append('visu_zip', visuZip);
+
+                const uploadRes = await fetch('/api/deploy/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!uploadRes.ok) {
+                    const err = await uploadRes.json();
+                    throw new Error(err.detail || 'Upload failed');
+                }
+
+                const uploadData = await uploadRes.json();
+                const sessionId = uploadData.session_id;
+
+                addLog('>>> Starting deployment...', '#3b82f6');
+
+                const runFormData = new FormData();
+                runFormData.append('session_id', sessionId);
+                runFormData.append('selected_rigs', JSON.stringify(selectedRigs));
+                runFormData.append('username', 'mechatronics');
+                runFormData.append('password', sessionPassword);
+
+                const runRes = await fetch('/api/deploy/run', {
+                    method: 'POST',
+                    body: runFormData
+                });
+
+                if (!runRes.ok) {
+                    if (runRes.status === 401) {
+                        alert('Authentication failed. Please refresh and try again.');
+                        location.reload();
+                        return;
+                    }
+                    const err = await runRes.json();
+                    throw new Error(err.detail || 'Execution failed');
+                }
+
+                addLog('>>> Deployment task submitted successfully.', '#0f0');
+
+            } catch (err) {
+                addLog(`ERROR: ${err.message}`, '#f00');
+                alert(`Error: ${err.message}`);
+            } finally {
+                setTimeout(() => {
+                    deployBtn.disabled = false;
+                    deployBtn.textContent = 'START DEPLOYMENT';
+                    deployBtn.classList.remove('opacity-50');
+                }, 5000);
+            }
+        };
+    </script>
+</body>
+</html>

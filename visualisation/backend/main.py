@@ -5,7 +5,7 @@ from fastapi.responses import RedirectResponse
 from pathlib import Path
 
 from .config import FRONTEND_DIR
-from .pages import rig_overview, pdf_generation, historical_trend
+from .pages import rig_overview, pdf_generation, historical_trend, deploy
 
 app = FastAPI(title="Twinsafe Central Hub")
 
@@ -29,6 +29,7 @@ app.add_middleware(
 app.include_router(rig_overview.router)
 app.include_router(pdf_generation.router)
 app.include_router(historical_trend.router)
+app.include_router(deploy.router)
 
 # Health check
 @app.get("/api/ping")
@@ -55,6 +56,10 @@ async def pdf_chart_generation_legacy():
 @app.get("/historical-trend")
 async def historical_trend_legacy():
     return RedirectResponse(url="/pages/historical-trend.html")
+
+@app.get("/deploy")
+async def deploy_legacy():
+    return RedirectResponse(url="/pages/deploy.html")
 
 # Serve Frontend static files
 # We mount the subdirectories at the root paths to support relative links from /pages/*.html
