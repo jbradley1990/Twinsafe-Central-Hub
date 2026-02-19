@@ -134,8 +134,8 @@
                         <input type="file" id="crcFile" accept=".crc" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-500/20 file:text-blue-500 hover:file:bg-blue-500/30">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 uppercase mb-1">visu Folder (zip, optional)</label>
-                        <input type="file" id="visuZip" accept=".zip" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-500/20 file:text-gray-400 hover:file:bg-gray-500/30">
+                        <label class="block text-xs font-medium text-gray-500 uppercase mb-1">visu Folder (optional)</label>
+                        <input type="file" id="visuFolder" webkitdirectory directory multiple class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-500/20 file:text-gray-400 hover:file:bg-gray-500/30">
                     </div>
                 </div>
             </div>
@@ -220,7 +220,7 @@
             const prjFile = document.getElementById('prjFile').files[0];
             const appFile = document.getElementById('appFile').files[0];
             const crcFile = document.getElementById('crcFile').files[0];
-            const visuZip = document.getElementById('visuZip').files[0];
+            const visuFolder = document.getElementById('visuFolder').files;
 
             const selectedRigs = Array.from(document.querySelectorAll('.rig-checkbox:checked')).map(cb => cb.value);
 
@@ -246,7 +246,15 @@
                 formData.append('prj_file', prjFile);
                 formData.append('app_file', appFile);
                 formData.append('crc_file', crcFile);
-                if (visuZip) formData.append('visu_zip', visuZip);
+
+                if (visuFolder.length > 0) {
+                    const paths = [];
+                    for (let i = 0; i < visuFolder.length; i++) {
+                        formData.append('visu_files', visuFolder[i]);
+                        paths.push(visuFolder[i].webkitRelativePath);
+                    }
+                    formData.append('visu_paths', JSON.stringify(paths));
+                }
 
                 const uploadRes = await fetch('/api/deploy/upload', {
                     method: 'POST',

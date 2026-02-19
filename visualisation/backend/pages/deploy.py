@@ -78,7 +78,8 @@ async def upload_files(
     app_file: UploadFile = File(...),
     crc_file: UploadFile = File(...),
     prj_file: UploadFile = File(...),
-    visu_zip: Optional[UploadFile] = File(None)
+    visu_files: Optional[List[UploadFile]] = File(None),
+    visu_paths: Optional[str] = Form(None) # JSON string list of relative paths
 ):
     if password != DEPLOY_PASSWORD:
         raise HTTPException(status_code=401, detail="Invalid credentials")
@@ -97,17 +98,29 @@ async def upload_files(
             with open(file_path, "wb") as buffer:
                 shutil.copyfileobj(file.file, buffer)
 
-        if visu_zip:
-            filename = os.path.basename(visu_zip.filename)
-            zip_path = os.path.join(temp_dir, filename)
-            with open(zip_path, "wb") as buffer:
-                shutil.copyfileobj(visu_zip.file, buffer)
+        if visu_files and visu_paths:
+            paths = json.loads(visu_paths)
+            if len(paths) != len(visu_files):
+                raise ValueError("Mismatch between visu files and paths count")
 
-            # Extract zip
-            visu_dir = os.path.join(temp_dir, "visu")
-            os.makedirs(visu_dir, exist_ok=True)
-            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                zip_ref.extractall(visu_dir)
+            visu_base_dir = os.path.join(temp_dir, "visu")
+            os.makedirs(visu_base_dir, exist_ok=True)
+
+            for file, rel_path in zip(visu_files, paths):
+                # rel_path typically looks like "visu/something.js"
+                parts = rel_path.split("/")
+                if len(parts) > 1:
+                    actual_parts = parts[1:]
+                else:
+                    actual_parts = parts
+
+                # Sanitize components to prevent traversal
+                safe_parts = [os.path.basename(p) for p in actual_parts if p and p not in (".", "..")]
+                dest_path = os.path.join(visu_base_dir, *safe_parts)
+
+                os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+                with open(dest_path, "wb") as buffer:
+                    shutil.copyfileobj(file.file, buffer)
 
         return {"session_id": session_id}
     except Exception as e:
