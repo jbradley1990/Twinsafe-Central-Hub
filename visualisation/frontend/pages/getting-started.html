@@ -24,6 +24,7 @@
     }
     .guide-section { display: none; }
     .guide-section.active { display: block; }
+    .text-accent { color: var(--color-accent); }
 
     /* Hide scrollbar but keep functionality */
     .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -70,6 +71,7 @@
     <a href="#testing" class="nav-sub-link">Testing</a>
     <a href="#trend" class="nav-sub-link">Trend</a>
     <a href="#previous-pdf" class="nav-sub-link">Previous PDF</a>
+    <a href="#finding-test-results" class="nav-sub-link">Finding Test Results</a>
   </div>
 
   <main class="flex-grow p-6 overflow-hidden">
@@ -121,6 +123,108 @@
             <h1 class="text-4xl font-bold mb-8">Previous PDF</h1>
             <div class="embed-container rounded-xl border border-neutral-700 shadow-2xl bg-black">
               <iframe src="https://app.supademo.com/embed/cmls69ql31vy91189zdgi41rg" allow="clipboard-write" frameborder="0" webkitallowfullscreen="true" mozallowfullscreen="true" allowfullscreen></iframe>
+            </div>
+          </section>
+
+          <section id="finding-test-results" class="guide-section">
+            <h1 class="text-4xl font-bold mb-8">Finding Test Results</h1>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+              <div>
+                <h2 class="text-2xl font-semibold mb-4">File Storage Location</h2>
+                <p class="text-neutral-400 mb-6">
+                  All test data and generated PDF reports are automatically organized and stored on the shared network drive. You can find the root directory for all sales order records at:
+                </p>
+                <div class="bg-black p-4 rounded-lg border border-neutral-700 font-mono text-blue-400 mb-8 select-all">
+                  T:\OTSDocs\OTS DLS Chart Recordings
+                </div>
+
+                <h2 class="text-2xl font-semibold mb-4">How Files are Organized</h2>
+                <p class="text-neutral-400 mb-4">
+                  The system follows a strict hierarchical structure to ensure every test is easily traceable:
+                </p>
+                <ul class="space-y-4 text-neutral-300 mb-8">
+                  <li class="flex gap-3">
+                    <span class="text-accent font-bold">1.</span>
+                    <span><strong>Sales Order:</strong> The top-level folder representing the project.</span>
+                  </li>
+                  <li class="flex gap-3">
+                    <span class="text-accent font-bold">2.</span>
+                    <span><strong>Item Number:</strong> Sub-folders for specific items within that order.</span>
+                  </li>
+                  <li class="flex gap-3">
+                    <span class="text-accent font-bold">3.</span>
+                    <span><strong>Valve Folder:</strong> Individual folders for each valve tested.</span>
+                  </li>
+                  <li class="flex gap-3">
+                    <span class="text-accent font-bold">4.</span>
+                    <span><strong>Data & PDF:</strong> Each valve folder contains raw CSV data/JSON metadata and the final generated PDF reports.</span>
+                  </li>
+                </ul>
+
+                <h2 class="text-2xl font-semibold mb-4">The Batch Serial</h2>
+                <p class="text-neutral-400 mb-6">
+                  All tests performed simultaneously are linked by a unique timestamp serial, such as <span class="text-white font-mono bg-neutral-800 px-2 py-0.5 rounded">18-02-2026_14-03-00</span>. This ensures that even if multiple valves are tested in one go, their results stay grouped together.
+                </p>
+              </div>
+
+              <div class="bg-neutral-800/50 p-6 rounded-xl border border-neutral-700">
+                <h3 class="text-xl font-semibold mb-4 text-center">Example Directory Structure</h3>
+                <pre class="text-sm font-mono text-neutral-300 leading-relaxed overflow-x-auto">
+├───Sales Order
+│   └───Item No
+│       ├───Valve 1
+│       │   ├───Data
+│       │   │       18-02-2026_14-03-00_data_1.csv
+│       │   │       18-02-2026_14-03-00_details.json
+│       │   │
+│       │   └───PDF
+│       │       ├───Fail
+│       │       └───Pass
+│       │               Sales Order_Item No_Valve 1_18-02-2026_14-03-00_PASS.pdf
+│       │
+│       ├───Valve 2
+│       │   ├───Data
+│       │   │       18-02-2026_14-03-00_data_1.csv
+│       │   │       18-02-2026_14-03-00_details.json
+│       │   │
+│       │   └───PDF
+│       │       ├───Fail
+│       │       └───Pass
+│       │               Sales Order_Item No_Valve 2_18-02-2026_14-03-00_PASS.pdf
+│       │
+│       ├───Valve 3
+│       │   ├───Data
+│       │   │       18-02-2026_14-03-00_data_1.csv
+│       │   │       18-02-2026_14-03-00_details.json
+│       │   │
+│       │   └───PDF
+│       │       ├───Fail
+│       │       │       Sales Order_Item No_Valve 3_18-02-2026_14-03-00_FAIL.pdf
+│       │       │
+│       │       └───Pass
+│       └───Valve 4
+│           ├───Data
+│           │       18-02-2026_14-03-00_data_1.csv
+│           │       18-02-2026_14-03-00_details.json
+│           │
+│           └───PDF
+│               ├───Fail
+│               │       Sales Order_Item No_Valve 4_18-02-2026_14-03-00_FAIL.pdf
+│               │
+│               └───Pass</pre>
+                <div class="mt-6 pt-6 border-t border-neutral-700">
+                  <h4 class="text-sm font-bold uppercase tracking-wider text-neutral-500 mb-3">Outcome Examples:</h4>
+                  <div class="space-y-2 text-sm">
+                    <div class="flex justify-between"><span class="text-neutral-400">Valve 1 & 2:</span> <span class="text-green-500 font-semibold">Passed Successfully</span></div>
+                    <div class="flex justify-between"><span class="text-neutral-400">Valve 3:</span> <span class="text-red-500 font-semibold">Manually Failed</span></div>
+                    <div class="flex justify-between"><span class="text-neutral-400">Valve 4:</span> <span class="text-red-500 font-semibold">Overpressurised</span></div>
+                  </div>
+                  <p class="mt-4 text-xs text-neutral-500 italic">
+                    * Detailed pass/fail criteria and procedures are elaborated in the "Testing" supademo walkthrough.
+                  </p>
+                </div>
+              </div>
             </div>
           </section>
         </article>
