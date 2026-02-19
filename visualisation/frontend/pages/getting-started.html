@@ -24,6 +24,7 @@
     }
     .guide-section { display: none; }
     .guide-section.active { display: block; }
+    .text-accent { color: var(--color-accent); }
 
     /* Hide scrollbar but keep functionality */
     .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -61,8 +62,7 @@
     </div>
   </nav>
 
-  <!-- Sub Navigation -->
-  <div class="bg-neutral-800 border-b border-neutral-700 px-6 flex gap-2 overflow-x-auto no-scrollbar">
+  <div class="bg-neutral-800 border-b border-neutral-700 px-6 flex gap-2 overflow-x-auto no-scrollbar shrink-0">
     <a href="#user-authentication" class="nav-sub-link">User Authentication</a>
     <a href="#test-details" class="nav-sub-link">Test Details</a>
     <a href="#unique-numbers" class="nav-sub-link">Unique Numbers</a>
@@ -70,12 +70,12 @@
     <a href="#testing" class="nav-sub-link">Testing</a>
     <a href="#trend" class="nav-sub-link">Trend</a>
     <a href="#previous-pdf" class="nav-sub-link">Previous PDF</a>
+    <a href="#finding-test-results" class="nav-sub-link">Finding Test Results</a>
   </div>
 
   <main class="flex-grow p-6 overflow-hidden">
     <div class="panel h-full overflow-y-auto p-8 bg-neutral-900">
-        <article class="max-w-5xl mx-auto">
-          <section id="user-authentication" class="guide-section active">
+        <article class="max-w-6xl mx-auto"> <section id="user-authentication" class="guide-section active">
             <h1 class="text-4xl font-bold mb-8">User Authentication</h1>
             <div class="embed-container rounded-xl border border-neutral-700 shadow-2xl bg-black">
               <iframe src="https://app.supademo.com/embed/cmlrxgxew156a1189u64a5k4t" allow="clipboard-write" frameborder="0" webkitallowfullscreen="true" mozallowfullscreen="true" allowfullscreen></iframe>
@@ -121,6 +121,111 @@
             <h1 class="text-4xl font-bold mb-8">Previous PDF</h1>
             <div class="embed-container rounded-xl border border-neutral-700 shadow-2xl bg-black">
               <iframe src="https://app.supademo.com/embed/cmls69ql31vy91189zdgi41rg" allow="clipboard-write" frameborder="0" webkitallowfullscreen="true" mozallowfullscreen="true" allowfullscreen></iframe>
+            </div>
+          </section>
+
+          <section id="finding-test-results" class="guide-section">
+            <h1 class="text-4xl font-bold mb-8">Finding Test Results</h1>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+              <div class="lg:col-span-5">
+                <h2 class="text-2xl font-semibold mb-4">File Storage Location</h2>
+                <p class="text-neutral-400 mb-6">
+                  All test data and generated PDF reports are automatically organized and stored on the shared network drive. Follow the below path to access the root directory:
+                </p>
+                <div class="bg-black p-4 rounded-lg border border-neutral-700 font-mono text-blue-400 mb-8 select-all">
+                  T:/OTSDocs/OTS DLS Chart Recordings/
+                </div>
+
+                <h2 class="text-2xl font-semibold mb-4">How Files are Organized</h2>
+                <p class="text-neutral-400 mb-4">
+                  The system follows a strict structure to ensure every test is easily traceable:
+                </p>
+                <ul class="space-y-4 text-neutral-300 mb-8">
+                  <li class="flex gap-3">
+                    <span class="text-accent font-bold">1.</span>
+                    <span><strong>OTS Number:</strong> The top-level folder will be what you entered in the "OTS Number" field.</span>
+                  </li>
+                  <li class="flex gap-3">
+                    <span class="text-accent font-bold">2.</span>
+                    <span><strong>Item Number:</strong> The next folder is the item number you entered in the "Item Number" field.</span>
+                  </li>
+                  <li class="flex gap-3">
+                    <span class="text-accent font-bold">3.</span>
+                    <span><strong>Unique Number:</strong> The next folder splits the valves based on their unique numbers.</span>
+                  </li>
+                  <li class="flex gap-3">
+                    <span class="text-accent font-bold">4.</span>
+                    <span><strong>Data:</strong> The Data folder contains all raw CSV data and JSON metadata for each test run.</span>
+                  </li>
+                  <li class="flex gap-3">
+                    <span class="text-accent font-bold">5.</span>
+                    <span><strong>PDF:</strong> The PDF folder contains all generated PDF reports for each test run split between "Pass" and "Fail" subfolders.</span>
+                  </li>
+                </ul>
+
+                <h2 class="text-2xl font-semibold mb-4">The Batch Serial</h2>
+                <p class="text-neutral-400 mb-6">
+                  All tests performed simultaneously are linked by a unique timestamp serial, such as <span class="text-white font-mono bg-neutral-800 px-2 py-0.5 rounded">18-02-2026_14-03-00</span>. This ensures that even if multiple valves are tested in one go, their results stay grouped together.
+                </p>
+              </div>
+
+              <div class="lg:col-span-7 bg-neutral-800/50 p-6 rounded-xl border border-neutral-700 flex flex-col">
+                <h3 class="text-xl font-semibold mb-4 text-center">Example Directory Structure</h3>
+                <div class="w-full overflow-x-auto no-scrollbar flex-grow">
+                  <pre class="text-sm font-mono text-neutral-300 leading-relaxed">
+Sales Order
+└───Item No
+    ├───Valve 1
+    │   ├───Data
+    │   │       18-02-2026_14-03-00_data_1.csv
+    │   │       18-02-2026_14-03-00_details.json
+    │   │
+    │   └───PDF
+    │       ├───Fail
+    │       └───Pass
+    │               Sales Order_Item No_Valve 1_18-02-2026_14-03-00_PASS.pdf
+    │
+    ├───Valve 2
+    │   ├───Data
+    │   │       18-02-2026_14-03-00_data_1.csv
+    │   │       18-02-2026_14-03-00_details.json
+    │   │
+    │   └───PDF
+    │       ├───Fail
+    │       └───Pass
+    │               Sales Order_Item No_Valve 2_18-02-2026_14-03-00_PASS.pdf
+    │
+    ├───Valve 3
+    │   ├───Data
+    │   │       18-02-2026_14-03-00_data_1.csv
+    │   │       18-02-2026_14-03-00_details.json
+    │   │
+    │   └───PDF
+    │       ├───Fail
+    │       │       Sales Order_Item No_Valve 3_18-02-2026_14-03-00_FAIL.pdf
+    │       │
+    │       └───Pass
+    └───Valve 4
+        ├───Data
+        │       18-02-2026_14-03-00_data_1.csv
+        │       18-02-2026_14-03-00_details.json
+        │
+        └───PDF
+            ├───Fail
+            │       Sales Order_Item No_Valve 4_18-02-2026_14-03-00_FAIL.pdf
+            │
+            └───Pass</pre>
+                </div>
+                <div class="mt-6 pt-6 border-t border-neutral-700">
+                  <h4 class="text-sm font-bold uppercase tracking-wider text-neutral-500 mb-3">Outcome Examples:</h4>
+                  <div class="space-y-2 text-sm">
+                    <div class="flex justify-between"><span class="text-neutral-400">Valve 1 & 2:</span> <span class="text-green-500 font-semibold">Passed Successfully</span></div>
+                    <div class="flex justify-between"><span class="text-neutral-400">Valve 3:</span> <span class="text-red-500 font-semibold">Manually Failed</span></div>
+                    <div class="flex justify-between"><span class="text-neutral-400">Valve 4:</span> <span class="text-red-500 font-semibold">Overpressurised</span></div>
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
         </article>
