@@ -71,6 +71,7 @@
     <a href="#trend" class="nav-sub-link">Trend</a>
     <a href="#previous-pdf" class="nav-sub-link">Previous PDF</a>
     <a href="#finding-test-results" class="nav-sub-link">Finding Test Results</a>
+    <a href="#test-log-sheet-example" class="nav-sub-link">Test Log Sheet Example</a>
   </div>
 
   <main class="flex-grow p-6 overflow-hidden">
@@ -223,6 +224,84 @@ Sales Order
                     <div class="flex justify-between"><span class="text-neutral-400">Valve 1 & 2:</span> <span class="text-green-500 font-semibold">Passed Successfully</span></div>
                     <div class="flex justify-between"><span class="text-neutral-400">Valve 3:</span> <span class="text-red-500 font-semibold">Manually Failed</span></div>
                     <div class="flex justify-between"><span class="text-neutral-400">Valve 4:</span> <span class="text-red-500 font-semibold">Overpressurised</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section id="test-log-sheet-example" class="guide-section">
+            <h1 class="text-4xl font-bold mb-8">Test Log Sheet Example</h1>
+            <div class="space-y-12">
+              <div class="rounded-xl border border-neutral-700 shadow-2xl bg-black overflow-hidden">
+                <img src="../assets/getting-started-media/OTS_Test_Log_Sheet_Example.png" alt="OTS Test Log Sheet Example" class="w-full h-auto block">
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div class="space-y-6">
+                  <div>
+                    <h2 class="text-2xl font-semibold mb-4 text-accent">Initial Setup & Synchronization</h2>
+                    <ul class="space-y-4 text-neutral-300">
+                      <li class="flex gap-3">
+                        <span class="text-accent font-bold">•</span>
+                        <span><strong>First Row Completion:</strong> Ensure the first row of the log sheet is fully completed before starting.</span>
+                      </li>
+                      <li class="flex gap-3">
+                        <span class="text-accent font-bold">•</span>
+                        <span><strong>Data Matching:</strong> Load the <strong>Test Details</strong> and input <strong>Unique Numbers</strong> into the system. Ensure the details on the system match the details at the top of the log sheet exactly.</span>
+                      </li>
+                      <li class="flex gap-3">
+                        <span class="text-accent font-bold">•</span>
+                        <span><strong>Parameter Verification:</strong> Always confirm that the <strong>Procedure Ref</strong>, <strong>Test Name</strong>, <strong>Hold Time</strong>, and <strong>Test Pressure</strong> for your test match the parameters shown in the "Testing" tab's start dialog.</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div class="space-y-6">
+                  <div>
+                    <h2 class="text-2xl font-semibold mb-4 text-accent">During & After Test</h2>
+                    <ul class="space-y-4 text-neutral-300">
+                      <li class="flex gap-3">
+                        <span class="text-accent font-bold">•</span>
+                        <span><strong>Breakout (lbf-ft):</strong> Record your breakout value on both the physical log sheet and in the system's pop-up dialog at the end of the test.</span>
+                      </li>
+                      <li class="flex gap-3">
+                        <span class="text-accent font-bold">•</span>
+                        <span><strong>Comments:</strong> Use this field for any quick notes or observations regarding the test run.</span>
+                      </li>
+                      <li class="flex gap-3">
+                        <span class="text-accent font-bold">•</span>
+                        <span><strong>Unique Chart ID:</strong> This is the <code>dd-mm-yyyy_hh-mm-ss</code> serial number generated at the start of the test. (See the <i>Finding Test Results</i> tab for more information on where this is referenced).</span>
+                      </li>
+                      <li class="flex gap-3">
+                        <span class="text-accent font-bold">•</span>
+                        <span><strong>Signature (Sig):</strong> Please initial the log sheet after the test is completed.</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-neutral-800/50 p-8 rounded-xl border border-neutral-700">
+                <h2 class="text-2xl font-semibold mb-6">Final Checklist</h2>
+                <p class="text-neutral-400 mb-6">Before finishing, ensure the following fields are also completed on the log sheet:</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div class="flex items-center gap-3 bg-neutral-900/50 p-4 rounded-lg border border-neutral-700">
+                    <div class="w-2 h-2 bg-accent rounded-full"></div>
+                    <span class="font-medium">Pressure Transducer No</span>
+                  </div>
+                  <div class="flex items-center gap-3 bg-neutral-900/50 p-4 rounded-lg border border-neutral-700">
+                    <div class="w-2 h-2 bg-accent rounded-full"></div>
+                    <span class="font-medium">Gauge No (if used)</span>
+                  </div>
+                  <div class="flex items-center gap-3 bg-neutral-900/50 p-4 rounded-lg border border-neutral-700">
+                    <div class="w-2 h-2 bg-accent rounded-full"></div>
+                    <span class="font-medium">Test Technician Name</span>
+                  </div>
+                  <div class="flex items-center gap-3 bg-neutral-900/50 p-4 rounded-lg border border-neutral-700">
+                    <div class="w-2 h-2 bg-accent rounded-full"></div>
+                    <span class="font-medium">Customer Witness Name/Signature (if used)</span>
                   </div>
                 </div>
               </div>
