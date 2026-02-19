@@ -26,11 +26,20 @@ class OpcUaWrapper:
         self.node_cache: Dict[str, Any] = {}
         self.connected = False
         self.last_attempt = 0
-        self.attempt_cooldown = 10  # Seconds between reconnection attempts
+        self.attempt_cooldown = 30  # Seconds between reconnection attempts
 
         if OPC_AVAILABLE:
             # Initial connect attempt is now handled by background polling
             pass
+
+    def _disconnect(self):
+        if self.client:
+            try:
+                self.client.disconnect()
+            except:
+                pass
+            self.client = None
+        self.connected = False
 
     def _connect(self) -> None:
         if not OPC_AVAILABLE: return
@@ -94,8 +103,8 @@ class OpcUaWrapper:
             try:
                 return self.node_cache[key].get_value()
             except Exception as e:
-                logger.error(f"[{self.name}] OPC read error for {key}: {e}")
-                self.connected = False
+                logger.error(f"[{self.name}] OPC error: {e}")
+                self._disconnect() # This tells CODESYS "I am leaving"
                 return self._get_mock_data(key)
 
     def _get_mock_data(self, key: str) -> Any:
@@ -123,9 +132,9 @@ class OpcUaWrapper:
                 self.node_cache[key].set_value(value)
                 return True
             except Exception as e:
-                logger.error(f"[{self.name}] OPC write error for {key}: {e}")
-                self.connected = False
-                return False
+                logger.error(f"[{self.name}] OPC error: {e}")
+                self._disconnect() # This tells CODESYS "I am leaving"
+                return self._get_mock_data(key)
 
 # Shared instance for the main PLC
 opc = OpcUaWrapper(PLC_ENDPOINT, name="MainPLC")

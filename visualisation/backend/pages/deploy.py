@@ -2,11 +2,11 @@ import os
 import asyncio
 import shutil
 import tempfile
-import zipfile
 import json
 import uuid
-from typing import List, Optional, Dict
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, UploadFile, File, Form, HTTPException, Query
+from dotenv import load_dotenv
+from typing import List, Optional, Dict, Annotated
+from fastapi import APIRouter, Path, WebSocket, WebSocketDisconnect, UploadFile, File, Form, HTTPException, Query
 import logging
 
 from ..config import RIG_IPS
@@ -15,7 +15,10 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 # Deployment password from environment variable
-DEPLOY_PASSWORD = os.getenv("DEPLOY_PASSWORD", "password123")
+env_path = "visualisation/frontend/assets/deploy.env"
+load_dotenv(dotenv_path=env_path)
+DEPLOY_USERNAME = os.getenv("DEPLOY_USERNAME")
+DEPLOY_PASSWORD = os.getenv("DEPLOY_PASSWORD")
 
 # In-memory storage for active deployment sessions (temp_dir mapping)
 active_sessions: Dict[str, str] = {}
@@ -132,12 +135,13 @@ async def upload_files(
 
 @router.post("/api/deploy/run")
 async def run_deploy(
-    session_id: str = Form(...),
-    selected_rigs: str = Form(...), # JSON string list
-    username: str = Form(...),
-    password: str = Form(...)
+    session_id: Annotated[str, Form()],
+    selected_rigs: Annotated[str, Form()],
+    username: Annotated[str, Form()], # No default value here
+    password: Annotated[str, Form()]  # No default value here
 ):
-    if username != "mechatronics" or password != DEPLOY_PASSWORD:
+    # Check against the variables loaded from your .env
+    if username != DEPLOY_USER or password != DEPLOY_PASSWORD:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     temp_dir = active_sessions.get(session_id)

@@ -55,13 +55,13 @@
             <form id="loginForm" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-400 mb-1">Username</label>
-                    <input type="text" id="username" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500" value="mechatronics" readonly>
+                    <input type="text" id="username" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-green-500">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-400 mb-1">Password</label>
-                    <input type="password" id="password" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500" required autofocus>
+                    <input type="password" id="password" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-green-500" required autofocus>
                 </div>
-                <button type="submit" class="btn btn-blue w-full py-3 text-lg font-bold mt-4">Login</button>
+                <button type="submit" class="btn btn-lg btn-success w-full">Login</button>
                 <p id="loginError" class="text-red-500 text-sm mt-2 hidden text-center">Invalid password</p>
             </form>
         </div>
@@ -88,7 +88,6 @@
     <main class="flex-1 flex gap-5 p-5 min-h-0">
         <!-- Console Log Column -->
         <div class="flex-[2] flex flex-col min-h-0">
-            <h2 class="text-xl font-bold mb-4">Deployment Log</h2>
             <div id="console" class="console-container">
                 <div class="console-line text-gray-500 italic">Waiting for connection...</div>
             </div>
@@ -123,25 +122,25 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-500 uppercase mb-1">Archive.prj</label>
-                        <input type="file" id="prjFile" accept=".prj" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-500/20 file:text-blue-500 hover:file:bg-blue-500/30">
+                        <input type="file" id="prjFile" accept=".prj" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#016644] file:text-white hover:file:bg-[#014d33] transition-colors">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-500 uppercase mb-1">.app File</label>
-                        <input type="file" id="appFile" accept=".app" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-500/20 file:text-blue-500 hover:file:bg-blue-500/30">
+                        <input type="file" id="appFile" accept=".app" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#016644] file:text-white hover:file:bg-[#014d33] transition-colors">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-500 uppercase mb-1">.crc File</label>
-                        <input type="file" id="crcFile" accept=".crc" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-500/20 file:text-blue-500 hover:file:bg-blue-500/30">
+                        <input type="file" id="crcFile" accept=".crc" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#016644] file:text-white hover:file:bg-[#014d33] transition-colors">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-500 uppercase mb-1">visu Folder (optional)</label>
-                        <input type="file" id="visuFolder" webkitdirectory directory multiple class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-500/20 file:text-gray-400 hover:file:bg-gray-500/30">
+                        <input type="file" id="visuFolder" webkitdirectory directory multiple class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#016644] file:text-white hover:file:bg-[#014d33] transition-colors">
                     </div>
                 </div>
             </div>
 
-            <button id="deployBtn" class="btn btn-blue py-4 text-xl font-bold mt-auto shadow-lg shadow-blue-500/20">
-                START DEPLOYMENT
+            <button id="deployBtn" class="btn btn-lg btn-success w-full">
+                Start Deployment
             </button>
         </aside>
     </main>

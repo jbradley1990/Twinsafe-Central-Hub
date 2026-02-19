@@ -8,3 +8,4 @@ numpy
 opcua
 requests
 websockets
+python-dotenv
