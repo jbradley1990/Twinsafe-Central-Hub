@@ -139,8 +139,19 @@ async def execute_deployment(temp_dir: str, rig_ids: List[str]):
         await log_to_ws(">>> Starting deployment process...")
 
         key_path = os.path.expanduser("~/.ssh/tl_prototype_key")
+
+        # Ensure .ssh directory exists (though the key itself might be missing)
+        ssh_dir = os.path.dirname(key_path)
+        if not os.path.exists(ssh_dir):
+            try:
+                os.makedirs(ssh_dir, mode=0o700, exist_ok=True)
+            except Exception as e:
+                await log_to_ws(f"ERROR: Could not create SSH directory {ssh_dir}: {e}")
+                return
+
         if not os.path.exists(key_path):
             await log_to_ws(f"ERROR: SSH key not found at {key_path}")
+            await log_to_ws("Please ensure the key is placed on the server.")
             return
 
         # Find files in temp_dir
