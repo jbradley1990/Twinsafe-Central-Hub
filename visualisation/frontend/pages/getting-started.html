@@ -32,8 +32,11 @@
 
     .embed-container {
       position: relative;
-      padding-bottom: 62.5%; /* Aspect ratio 1.60:1 */
-      height: 0;
+      width: 100%;
+      max-width: calc((100vh - 320px) * 1.6);
+      aspect-ratio: 1.6 / 1;
+      margin-left: auto;
+      margin-right: auto;
       overflow: hidden;
     }
     .embed-container iframe {
@@ -78,7 +81,7 @@
 
   <main class="flex-grow p-6 overflow-hidden">
     <div class="panel h-full overflow-y-auto p-8 bg-neutral-900">
-        <article class="max-w-6xl mx-auto"> <section id="user-authentication" class="guide-section active">
+        <article class="mx-auto"> <section id="user-authentication" class="guide-section active">
             <h1 class="text-4xl font-bold mb-8">User Authentication</h1>
             <div class="embed-container rounded-xl border border-neutral-700 shadow-2xl bg-black">
               <iframe src="https://app.supademo.com/embed/cmlrxgxew156a1189u64a5k4t" allow="clipboard-write" frameborder="0" webkitallowfullscreen="true" mozallowfullscreen="true" allowfullscreen></iframe>
