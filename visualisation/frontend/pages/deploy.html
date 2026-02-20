@@ -95,66 +95,62 @@
         </div>
 
         <!-- Controls Column -->
-        <aside class="flex-1 flex flex-col gap-5 min-h-0 overflow-y-auto">
-            <div class="panel p-6">
-                <h3 class="text-lg font-bold mb-4">1. Select Targets</h3>
-                <div class="grid grid-cols-1 gap-2">
+        <aside class="flex-1 flex flex-col gap-3 min-h-0 overflow-hidden">
+            <div class="panel p-4 flex flex-col min-h-0">
+                <h3 class="text-md font-bold mb-3">1. Select Targets</h3>
+                <div class="grid grid-cols-2 gap-2">
                     <div class="rig-item">
                         <input type="checkbox" id="hydrorig1" class="rig-checkbox" value="hydrorig1">
-                        <label for="hydrorig1" class="rig-label">Hydrostatic Rig 1</label>
+                        <label for="hydrorig1" class="rig-label !py-2 !px-3 text-sm">Hydro Rig 1</label>
                     </div>
                     <div class="rig-item">
                         <input type="checkbox" id="hydrorig2" class="rig-checkbox" value="hydrorig2">
-                        <label for="hydrorig2" class="rig-label">Hydrostatic Rig 2</label>
+                        <label for="hydrorig2" class="rig-label !py-2 !px-3 text-sm">Hydro Rig 2</label>
                     </div>
                     <div class="rig-item">
                         <input type="checkbox" id="gasrig1" class="rig-checkbox" value="gasrig1">
-                        <label for="gasrig1" class="rig-label">Gas Rig 1</label>
+                        <label for="gasrig1" class="rig-label !py-2 !px-3 text-sm">Gas Rig 1</label>
                     </div>
                     <div class="rig-item">
                         <input type="checkbox" id="gasrig2" class="rig-checkbox" value="gasrig2">
-                        <label for="gasrig2" class="rig-label">Gas Rig 2</label>
+                        <label for="gasrig2" class="rig-label !py-2 !px-3 text-sm">Gas Rig 2</label>
                     </div>
                 </div>
             </div>
 
-            <div class="panel p-6">
-                <h3 class="text-lg font-bold mb-4">2. Upload Files</h3>
-                <div class="space-y-4">
+            <div class="panel p-4 flex flex-col min-h-0">
+                <h3 class="text-md font-bold mb-3">2. CODESYS Update</h3>
+                <div class="space-y-3 flex-1 overflow-y-auto pr-1">
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 uppercase mb-1">Archive.prj</label>
-                        <input type="file" id="prjFile" accept=".prj" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#016644] file:text-white hover:file:bg-[#014d33] transition-colors">
+                        <label class="block text-[10px] font-medium text-gray-500 uppercase mb-0.5">Archive.prj</label>
+                        <input type="file" id="prjFile" accept=".prj" class="w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#016644] file:text-white hover:file:bg-[#014d33] transition-colors">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 uppercase mb-1">.app File</label>
-                        <input type="file" id="appFile" accept=".app" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#016644] file:text-white hover:file:bg-[#014d33] transition-colors">
+                        <label class="block text-[10px] font-medium text-gray-500 uppercase mb-0.5">.app File</label>
+                        <input type="file" id="appFile" accept=".app" class="w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#016644] file:text-white hover:file:bg-[#014d33] transition-colors">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 uppercase mb-1">.crc File</label>
-                        <input type="file" id="crcFile" accept=".crc" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#016644] file:text-white hover:file:bg-[#014d33] transition-colors">
+                        <label class="block text-[10px] font-medium text-gray-500 uppercase mb-0.5">.crc File</label>
+                        <input type="file" id="crcFile" accept=".crc" class="w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#016644] file:text-white hover:file:bg-[#014d33] transition-colors">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 uppercase mb-1">visu Folder (optional)</label>
-                        <input type="file" id="visuFolder" webkitdirectory directory multiple class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#016644] file:text-white hover:file:bg-[#014d33] transition-colors">
+                        <label class="block text-[10px] font-medium text-gray-500 uppercase mb-0.5">visu Folder (optional)</label>
+                        <input type="file" id="visuFolder" webkitdirectory directory multiple class="w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#016644] file:text-white hover:file:bg-[#014d33] transition-colors">
                     </div>
                 </div>
+                <button id="deployBtn" class="btn btn-success w-full mt-4">
+                    Start Deployment
+                </button>
             </div>
 
-            <div class="panel p-6">
-                <h3 class="text-lg font-bold mb-4">3. Git Update</h3>
-                <div class="space-y-4">
-                    <button id="gitPullBtn" class="btn btn-lg btn-blue w-full">
+            <div class="panel p-4">
+                <h3 class="text-md font-bold mb-3">3. Git Update</h3>
+                <div class="space-y-3">
+                    <button id="gitPullBtn" class="btn btn-success w-full">
                         Git Pull (Main Branch)
                     </button>
-                    <p class="text-xs text-gray-500">
-                        This will execute a 'git pull' on the selected rigs in the /home/mechatronics/Twinsafe-DLS/ directory.
-                    </p>
                 </div>
             </div>
-
-            <button id="deployBtn" class="btn btn-lg btn-success w-full">
-                Start Deployment
-            </button>
         </aside>
     </main>
 
