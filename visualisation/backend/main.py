@@ -5,7 +5,7 @@ from fastapi.responses import RedirectResponse
 from pathlib import Path
 
 from .config import FRONTEND_DIR
-from .pages import rig_overview, pdf_generation, historical_trend
+from .pages import rig_overview, pdf_generation, historical_trend, deploy
 
 app = FastAPI(title="Twinsafe Central Hub")
 
@@ -15,7 +15,11 @@ WEBVISU_URL = "http://10.1.6.7:9000"  # ← adjust to your HMI
 async def bounce_portal_host(request: Request, call_next):
     host = request.url.hostname or ""
     if host.lower() == "rnd-portal.valves.co.uk":
-        return RedirectResponse(url=WEBVISU_URL)
+        # Do not redirect if the request is for our own API, pages, assets, or styles
+        path = request.url.path
+        our_paths = ["/api", "/pages", "/assets", "/styles", "/guide", "/static"]
+        if not any(path.startswith(p) for p in our_paths) and path != "/":
+            return RedirectResponse(url=WEBVISU_URL)
     return await call_next(request)
 
 app.add_middleware(
@@ -29,6 +33,7 @@ app.add_middleware(
 app.include_router(rig_overview.router)
 app.include_router(pdf_generation.router)
 app.include_router(historical_trend.router)
+app.include_router(deploy.router)
 
 # Health check
 @app.get("/api/ping")
@@ -55,6 +60,10 @@ async def pdf_chart_generation_legacy():
 @app.get("/historical-trend")
 async def historical_trend_legacy():
     return RedirectResponse(url="/pages/historical-trend.html")
+
+@app.get("/deploy")
+async def deploy_legacy():
+    return RedirectResponse(url="/pages/deploy.html")
 
 # Serve Frontend static files
 # We mount the subdirectories at the root paths to support relative links from /pages/*.html
