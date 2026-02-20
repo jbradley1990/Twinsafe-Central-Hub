@@ -316,7 +316,15 @@ async def execute_git_pull(rig_ids: List[str]):
             ])
 
             if success:
-                await log_to_ws(f"Git pull complete for {rig_id}")
+                await log_to_ws(f"   -> Git pull complete. Restarting visualisation service...")
+                restart_success = await run_command([
+                    "ssh", "-i", key_path, "-o", "StrictHostKeyChecking=no",
+                    f"root@{ip}", "sudo systemctl restart visualisation.service"
+                ])
+                if restart_success:
+                    await log_to_ws(f"Git update and service restart complete for {rig_id}")
+                else:
+                    await log_to_ws(f"Git pull succeeded, but FAILED to restart service on {rig_id}")
             else:
                 await log_to_ws(f"FAILED to update Git repo on {rig_id}")
 
