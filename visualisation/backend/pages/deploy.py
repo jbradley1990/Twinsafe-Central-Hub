@@ -15,8 +15,7 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 # Deployment password from environment variable
-env_path = "visualisation/frontend/assets/deploy.env"
-load_dotenv(dotenv_path=env_path)
+load_dotenv() # Loads from .env in project root by default
 DEPLOY_USERNAME = os.getenv("DEPLOY_USERNAME")
 DEPLOY_PASSWORD = os.getenv("DEPLOY_PASSWORD")
 
@@ -45,17 +44,27 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
+@router.post("/api/deploy/login")
+async def login(
+    username: str = Form(...),
+    password: str = Form(...)
+):
+    if username != DEPLOY_USERNAME or password != DEPLOY_PASSWORD:
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+    return {"ok": True}
+
 @router.websocket("/api/deploy/ws")
 async def websocket_endpoint(websocket: WebSocket):
     # We use manual query param extraction to handle authentication after acceptance
     # if needed, or just to provide better logging.
+    username = websocket.query_params.get("username")
     password = websocket.query_params.get("password")
 
-    if password != DEPLOY_PASSWORD:
+    if username != DEPLOY_USERNAME or password != DEPLOY_PASSWORD:
         logger.warning(f"WebSocket authentication failed from {websocket.client.host}")
         # To avoid 403 Forbidden handshake rejection, we accept then close with a code
         await websocket.accept()
-        await websocket.send_text("ERROR: WebSocket Authentication Failed. Invalid password.")
+        await websocket.send_text("ERROR: WebSocket Authentication Failed. Invalid credentials.")
         await websocket.close(code=4001)
         return
 
@@ -77,6 +86,7 @@ async def log_to_ws(message: str):
 
 @router.post("/api/deploy/upload")
 async def upload_files(
+    username: str = Form(...),
     password: str = Form(...),
     app_file: UploadFile = File(...),
     crc_file: UploadFile = File(...),
@@ -84,7 +94,7 @@ async def upload_files(
     visu_files: Optional[List[UploadFile]] = File(None),
     visu_paths: Optional[str] = Form(None) # JSON string list of relative paths
 ):
-    if password != DEPLOY_PASSWORD:
+    if username != DEPLOY_USERNAME or password != DEPLOY_PASSWORD:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     # Create a temporary directory to store uploaded files
@@ -141,7 +151,7 @@ async def run_deploy(
     password: Annotated[str, Form()]  # No default value here
 ):
     # Check against the variables loaded from your .env
-    if username != DEPLOY_USER or password != DEPLOY_PASSWORD:
+    if username != DEPLOY_USERNAME or password != DEPLOY_PASSWORD:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     temp_dir = active_sessions.get(session_id)

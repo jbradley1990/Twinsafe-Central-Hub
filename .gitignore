@@ -9,6 +9,7 @@ venv/
 env/
 .venv/
 .env/
+.env
 
 # VS Code settings (if you don’t want them in git)
 .vscode/

@@ -55,14 +55,14 @@
             <form id="loginForm" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-400 mb-1">Username</label>
-                    <input type="text" id="username" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <input type="text" id="username" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-green-500" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-400 mb-1">Password</label>
-                    <input type="password" id="password" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-green-500" required autofocus>
+                    <input type="password" id="password" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-green-500" required>
                 </div>
                 <button type="submit" class="btn btn-lg btn-success w-full">Login</button>
-                <p id="loginError" class="text-red-500 text-sm mt-2 hidden text-center">Invalid password</p>
+                <p id="loginError" class="text-red-500 text-sm mt-2 hidden text-center">Invalid username or password</p>
             </form>
         </div>
     </div>
@@ -77,6 +77,7 @@
                 <a href="pdf-chart-generation.html" class="text-gray-400 font-medium hover:text-white transition-colors">PDF Generation</a>
                 <a href="historical-trend.html" class="text-gray-400 font-medium hover:text-white transition-colors">Historical Trend</a>
                 <a href="deploy.html" class="text-white font-medium hover:text-gray-300">Deploy</a>
+                <button id="logoutBtn" class="text-gray-400 font-medium hover:text-red-500 transition-colors hidden">Logout</button>
             </div>
         </div>
         <div class="flex flex-col items-end">
@@ -160,20 +161,71 @@
         const loginError = document.getElementById('loginError');
         const consoleDiv = document.getElementById('console');
         const deployBtn = document.getElementById('deployBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
 
-        let sessionPassword = '';
+        let sessionUser = sessionStorage.getItem('deploy_user') || '';
+        let sessionPassword = sessionStorage.getItem('deploy_pass') || '';
         let ws = null;
+
+        // Initial check
+        if (sessionUser && sessionPassword) {
+            loginOverlay.classList.add('hidden');
+            logoutBtn.classList.remove('hidden');
+            initWebSocket();
+        }
 
         // Login Handler
         loginForm.onsubmit = async (e) => {
             e.preventDefault();
-            const password = document.getElementById('password').value;
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
 
-            if (!password) return;
+            if (!user || !pass) return;
 
-            sessionPassword = password;
-            loginOverlay.classList.add('hidden');
-            initWebSocket();
+            try {
+                const formData = new FormData();
+                formData.append('username', user);
+                formData.append('password', pass);
+
+                const response = await fetch('/api/deploy/login', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    sessionUser = user;
+                    sessionPassword = pass;
+                    sessionStorage.setItem('deploy_user', user);
+                    sessionStorage.setItem('deploy_pass', pass);
+
+                    loginOverlay.classList.add('hidden');
+                    loginError.classList.add('hidden');
+                    logoutBtn.classList.remove('hidden');
+                    initWebSocket();
+                } else {
+                    loginError.classList.remove('hidden');
+                }
+            } catch (err) {
+                console.error('Login error:', err);
+                loginError.textContent = 'Connection error';
+                loginError.classList.remove('hidden');
+            }
+        };
+
+        // Logout Handler
+        logoutBtn.onclick = () => {
+            sessionUser = '';
+            sessionPassword = '';
+            sessionStorage.removeItem('deploy_user');
+            sessionStorage.removeItem('deploy_pass');
+            if (ws) {
+                ws.close();
+                ws = null;
+            }
+            loginOverlay.classList.remove('hidden');
+            logoutBtn.classList.add('hidden');
+            document.getElementById('password').value = '';
+            addLog('Logged out.', '#a50');
         };
 
         function addLog(message, color = '') {
@@ -186,8 +238,11 @@
         }
 
         function initWebSocket() {
+            if (!sessionUser || !sessionPassword) return;
+
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            ws = new WebSocket(`${protocol}//${window.location.host}/api/deploy/ws?password=${encodeURIComponent(sessionPassword)}`);
+            const url = `${protocol}//${window.location.host}/api/deploy/ws?username=${encodeURIComponent(sessionUser)}&password=${encodeURIComponent(sessionPassword)}`;
+            ws = new WebSocket(url);
 
             ws.onopen = () => {
                 consoleDiv.innerHTML = '';
@@ -206,12 +261,14 @@
 
             ws.onclose = (event) => {
                 if (event.code === 4001) {
-                    addLog('AUTHENTICATION FAILED: The provided password for WebSocket connection is incorrect.', '#f00');
+                    addLog('AUTHENTICATION FAILED: Invalid credentials for WebSocket connection.', '#f00');
                     // We don't retry if authentication failed
                     return;
                 }
-                addLog('Disconnected from server. Retrying in 5s...', '#a50');
-                setTimeout(initWebSocket, 5000);
+                if (sessionUser && sessionPassword) {
+                    addLog('Disconnected from server. Retrying in 5s...', '#a50');
+                    setTimeout(initWebSocket, 5000);
+                }
             };
         }
 
@@ -241,6 +298,7 @@
                 addLog('>>> Uploading files...', '#3b82f6');
 
                 const formData = new FormData();
+                formData.append('username', sessionUser);
                 formData.append('password', sessionPassword);
                 formData.append('prj_file', prjFile);
                 formData.append('app_file', appFile);
@@ -273,7 +331,7 @@
                 const runFormData = new FormData();
                 runFormData.append('session_id', sessionId);
                 runFormData.append('selected_rigs', JSON.stringify(selectedRigs));
-                runFormData.append('username', 'mechatronics');
+                runFormData.append('username', sessionUser);
                 runFormData.append('password', sessionPassword);
 
                 const runRes = await fetch('/api/deploy/run', {
