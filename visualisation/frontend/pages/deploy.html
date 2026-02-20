@@ -86,63 +86,72 @@
         </div>
     </nav>
 
-    <main class="flex-1 flex gap-5 p-5 min-h-0">
+    <main class="flex-1 flex gap-4 p-4 min-h-0">
         <!-- Console Log Column -->
-        <div class="flex-[2] flex flex-col min-h-0">
+        <div class="flex-1 flex flex-col min-h-0">
             <div id="console" class="console-container">
                 <div class="console-line text-gray-500 italic">Waiting for connection...</div>
             </div>
         </div>
 
         <!-- Controls Column -->
-        <aside class="flex-1 flex flex-col gap-5 min-h-0 overflow-y-auto">
-            <div class="panel p-6">
-                <h3 class="text-lg font-bold mb-4">1. Select Targets</h3>
-                <div class="grid grid-cols-1 gap-2">
+        <aside class="w-full max-w-[480px] flex flex-col gap-4 min-h-0 shrink-0">
+            <!-- Select Targets Panel -->
+            <div class="panel p-5 flex flex-col justify-center flex-1">
+                <h3 class="text-xs font-bold mb-3 text-gray-400 uppercase tracking-wider">Select Targets</h3>
+                <div class="flex flex-col gap-1.5">
                     <div class="rig-item">
                         <input type="checkbox" id="hydrorig1" class="rig-checkbox" value="hydrorig1">
-                        <label for="hydrorig1" class="rig-label">Hydrostatic Rig 1</label>
+                        <label for="hydrorig1" class="rig-label !py-2 !px-4 text-sm font-semibold">Hydro Rig 1</label>
                     </div>
                     <div class="rig-item">
                         <input type="checkbox" id="hydrorig2" class="rig-checkbox" value="hydrorig2">
-                        <label for="hydrorig2" class="rig-label">Hydrostatic Rig 2</label>
+                        <label for="hydrorig2" class="rig-label !py-2 !px-4 text-sm font-semibold">Hydro Rig 2</label>
                     </div>
                     <div class="rig-item">
                         <input type="checkbox" id="gasrig1" class="rig-checkbox" value="gasrig1">
-                        <label for="gasrig1" class="rig-label">Gas Rig 1</label>
+                        <label for="gasrig1" class="rig-label !py-2 !px-4 text-sm font-semibold">Gas Rig 1</label>
                     </div>
                     <div class="rig-item">
                         <input type="checkbox" id="gasrig2" class="rig-checkbox" value="gasrig2">
-                        <label for="gasrig2" class="rig-label">Gas Rig 2</label>
+                        <label for="gasrig2" class="rig-label !py-2 !px-4 text-sm font-semibold">Gas Rig 2</label>
                     </div>
                 </div>
             </div>
 
-            <div class="panel p-6">
-                <h3 class="text-lg font-bold mb-4">2. Upload Files</h3>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 uppercase mb-1">Archive.prj</label>
-                        <input type="file" id="prjFile" accept=".prj" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#016644] file:text-white hover:file:bg-[#014d33] transition-colors">
+            <!-- CODESYS Update Panel -->
+            <div class="panel p-5 flex flex-col justify-between flex-[1.6] min-h-0">
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">CODESYS Update</h3>
+                <div class="grid grid-cols-1 gap-3">
+                    <div class="flex items-center gap-4">
+                        <label class="w-24 shrink-0 text-xs font-medium text-gray-500 uppercase">Archive.prj</label>
+                        <input type="file" id="prjFile" accept=".prj" class="flex-1 text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#016644] file:text-white hover:file:bg-[#014d33] transition-colors">
                     </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 uppercase mb-1">.app File</label>
-                        <input type="file" id="appFile" accept=".app" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#016644] file:text-white hover:file:bg-[#014d33] transition-colors">
+                    <div class="flex items-center gap-4">
+                        <label class="w-24 shrink-0 text-xs font-medium text-gray-500 uppercase">.app File</label>
+                        <input type="file" id="appFile" accept=".app" class="flex-1 text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#016644] file:text-white hover:file:bg-[#014d33] transition-colors">
                     </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 uppercase mb-1">.crc File</label>
-                        <input type="file" id="crcFile" accept=".crc" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#016644] file:text-white hover:file:bg-[#014d33] transition-colors">
+                    <div class="flex items-center gap-4">
+                        <label class="w-24 shrink-0 text-xs font-medium text-gray-500 uppercase">.crc File</label>
+                        <input type="file" id="crcFile" accept=".crc" class="flex-1 text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#016644] file:text-white hover:file:bg-[#014d33] transition-colors">
                     </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 uppercase mb-1">visu Folder (optional)</label>
-                        <input type="file" id="visuFolder" webkitdirectory directory multiple class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#016644] file:text-white hover:file:bg-[#014d33] transition-colors">
+                    <div class="flex items-center gap-4">
+                        <label class="w-24 shrink-0 text-xs font-medium text-gray-500 uppercase">visu Folder</label>
+                        <input type="file" id="visuFolder" webkitdirectory directory multiple class="flex-1 text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#016644] file:text-white hover:file:bg-[#014d33] transition-colors">
                     </div>
                 </div>
+                <button id="deployBtn" class="btn btn-success w-full btn-lg mt-2">
+                    Start Deployment
+                </button>
             </div>
 
-            <button id="deployBtn" class="btn btn-lg btn-success w-full">
-                Start Deployment
-            </button>
+            <!-- Git Update Panel -->
+            <div class="panel p-5 flex flex-col justify-center flex-1">
+                <h3 class="text-xs font-bold mb-3 text-gray-400 uppercase tracking-wider">Git Update</h3>
+                <button id="gitPullBtn" class="btn btn-success w-full btn-lg">
+                    Git Pull (Main Branch)
+                </button>
+            </div>
         </aside>
     </main>
 
@@ -161,6 +170,7 @@
         const loginError = document.getElementById('loginError');
         const consoleDiv = document.getElementById('console');
         const deployBtn = document.getElementById('deployBtn');
+        const gitPullBtn = document.getElementById('gitPullBtn');
         const logoutBtn = document.getElementById('logoutBtn');
 
         let sessionUser = sessionStorage.getItem('deploy_user') || '';
@@ -359,6 +369,58 @@
                     deployBtn.disabled = false;
                     deployBtn.textContent = 'START DEPLOYMENT';
                     deployBtn.classList.remove('opacity-50');
+                }, 5000);
+            }
+        };
+
+        gitPullBtn.onclick = async () => {
+            const selectedRigs = Array.from(document.querySelectorAll('.rig-checkbox:checked')).map(cb => cb.value);
+
+            if (selectedRigs.length === 0) {
+                alert('Please select at least one rig.');
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to perform a Git Pull on ${selectedRigs.length} rig(s)?`)) {
+                return;
+            }
+
+            gitPullBtn.disabled = true;
+            gitPullBtn.textContent = 'UPDATING...';
+            gitPullBtn.classList.add('opacity-50');
+
+            try {
+                addLog('>>> Initiating Git Update...', '#3b82f6');
+
+                const formData = new FormData();
+                formData.append('selected_rigs', JSON.stringify(selectedRigs));
+                formData.append('username', sessionUser);
+                formData.append('password', sessionPassword);
+
+                const response = await fetch('/api/deploy/git-pull', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    addLog('>>> Git Update task submitted successfully.', '#0f0');
+                } else {
+                    if (response.status === 401) {
+                        alert('Authentication failed. Please refresh and try again.');
+                        location.reload();
+                        return;
+                    }
+                    const err = await response.json();
+                    throw new Error(err.detail || 'Failed to start Git update');
+                }
+            } catch (err) {
+                addLog(`ERROR: ${err.message}`, '#f00');
+                alert(`Error: ${err.message}`);
+            } finally {
+                setTimeout(() => {
+                    gitPullBtn.disabled = false;
+                    gitPullBtn.textContent = 'Git Pull (Main Branch)';
+                    gitPullBtn.classList.remove('opacity-50');
                 }, 5000);
             }
         };
