@@ -170,6 +170,23 @@ async def run_deploy(
 
     return {"status": "started"}
 
+@router.post("/api/deploy/git-pull")
+async def run_git_pull(
+    selected_rigs: Annotated[str, Form()],
+    username: Annotated[str, Form()],
+    password: Annotated[str, Form()]
+):
+    if username != DEPLOY_USERNAME or password != DEPLOY_PASSWORD:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    try:
+        rig_ids = json.loads(selected_rigs)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid rig selection format")
+
+    asyncio.create_task(execute_git_pull(rig_ids))
+    return {"status": "started"}
+
 async def execute_deployment(temp_dir: str, rig_ids: List[str]):
     try:
         await log_to_ws(">>> Starting deployment process...")
@@ -271,6 +288,41 @@ async def execute_deployment(temp_dir: str, rig_ids: List[str]):
             await log_to_ws("   -> Cleaned up temporary files.")
         except Exception as e:
             logger.error(f"Failed to cleanup temp dir: {e}")
+
+async def execute_git_pull(rig_ids: List[str]):
+    try:
+        await log_to_ws(">>> Starting Git Update (pull) process...")
+
+        key_path = os.path.expanduser("~/.ssh/tl_prototype_key")
+        if not os.path.exists(key_path):
+            await log_to_ws(f"ERROR: SSH key not found at {key_path}")
+            return
+
+        repo_path = "/home/mechatronics/Twinsafe-DLS/"
+
+        for rig_id in rig_ids:
+            ip = RIG_IPS.get(rig_id)
+            if not ip:
+                await log_to_ws(f"ERROR: Unknown rig ID {rig_id}")
+                continue
+
+            await log_to_ws(f"==> Updating Git repo on {rig_id} ({ip})")
+
+            # Execute git pull
+            await log_to_ws(f"   -> Executing git pull in {repo_path}")
+            success = await run_command([
+                "ssh", "-i", key_path, "-o", "StrictHostKeyChecking=no",
+                f"root@{ip}", f"cd {repo_path} && git pull"
+            ])
+
+            if success:
+                await log_to_ws(f"Git pull complete for {rig_id}")
+            else:
+                await log_to_ws(f"FAILED to update Git repo on {rig_id}")
+
+        await log_to_ws(">>> All Git updates finished.")
+    except Exception as e:
+        await log_to_ws(f"CRITICAL ERROR during Git update: {str(e)}")
 
 async def run_command(cmd: List[str]) -> bool:
     try:
