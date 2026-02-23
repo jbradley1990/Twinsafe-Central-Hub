@@ -122,25 +122,33 @@
             <!-- CODESYS Update Panel -->
             <div class="panel p-5 flex flex-col justify-between flex-[1.6] min-h-0">
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">CODESYS Update</h3>
-                <div class="grid grid-cols-1 gap-3">
-                    <div class="flex items-center gap-4">
-                        <label class="w-24 shrink-0 text-xs font-medium text-gray-500 uppercase">Archive.prj</label>
-                        <input type="file" id="prjFile" accept=".prj" class="flex-1 text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#016644] file:text-white hover:file:bg-[#014d33] transition-colors">
+                <div class="flex flex-col gap-4">
+                    <div class="flex flex-col gap-2">
+                        <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Select Deployment Folder</label>
+                        <input type="file" id="deployFolder" webkitdirectory directory multiple class="w-full text-xs text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#016644] file:text-white hover:file:bg-[#014d33] transition-colors cursor-pointer">
+                        <p class="text-[10px] text-gray-500 italic">Folder must contain .prj, .app, .crc files and a 'visu' folder.</p>
                     </div>
-                    <div class="flex items-center gap-4">
-                        <label class="w-24 shrink-0 text-xs font-medium text-gray-500 uppercase">.app File</label>
-                        <input type="file" id="appFile" accept=".app" class="flex-1 text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#016644] file:text-white hover:file:bg-[#014d33] transition-colors">
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <label class="w-24 shrink-0 text-xs font-medium text-gray-500 uppercase">.crc File</label>
-                        <input type="file" id="crcFile" accept=".crc" class="flex-1 text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#016644] file:text-white hover:file:bg-[#014d33] transition-colors">
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <label class="w-24 shrink-0 text-xs font-medium text-gray-500 uppercase">visu Folder</label>
-                        <input type="file" id="visuFolder" webkitdirectory directory multiple class="flex-1 text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#016644] file:text-white hover:file:bg-[#014d33] transition-colors">
+
+                    <div id="fileStatus" class="grid grid-cols-2 gap-2 p-3 bg-black/20 rounded-lg border border-white/5 hidden">
+                        <div id="status-prj" class="flex items-center gap-2 text-[11px]">
+                            <span class="status-icon">❌</span>
+                            <span class="status-text text-gray-400">.prj File</span>
+                        </div>
+                        <div id="status-app" class="flex items-center gap-2 text-[11px]">
+                            <span class="status-icon">❌</span>
+                            <span class="status-text text-gray-400">.app File</span>
+                        </div>
+                        <div id="status-crc" class="flex items-center gap-2 text-[11px]">
+                            <span class="status-icon">❌</span>
+                            <span class="status-text text-gray-400">.crc File</span>
+                        </div>
+                        <div id="status-visu" class="flex items-center gap-2 text-[11px]">
+                            <span class="status-icon">❌</span>
+                            <span class="status-text text-gray-400">visu Folder</span>
+                        </div>
                     </div>
                 </div>
-                <button id="deployBtn" class="btn btn-success w-full btn-lg mt-2">
+                <button id="deployBtn" class="btn btn-success w-full btn-lg mt-2 opacity-50 cursor-not-allowed" disabled>
                     Start Deployment
                 </button>
             </div>
@@ -172,6 +180,18 @@
         const deployBtn = document.getElementById('deployBtn');
         const gitPullBtn = document.getElementById('gitPullBtn');
         const logoutBtn = document.getElementById('logoutBtn');
+        const deployFolderInput = document.getElementById('deployFolder');
+        const fileStatusDiv = document.getElementById('fileStatus');
+        const statusPrj = document.getElementById('status-prj');
+        const statusApp = document.getElementById('status-app');
+        const statusCrc = document.getElementById('status-crc');
+        const statusVisu = document.getElementById('status-visu');
+
+        let selectedPrj = null;
+        let selectedApp = null;
+        let selectedCrc = null;
+        let selectedVisuFiles = [];
+        let selectedVisuPaths = [];
 
         let sessionUser = sessionStorage.getItem('deploy_user') || '';
         let sessionPassword = sessionStorage.getItem('deploy_pass') || '';
@@ -282,12 +302,71 @@
             };
         }
 
-        deployBtn.onclick = async () => {
-            const prjFile = document.getElementById('prjFile').files[0];
-            const appFile = document.getElementById('appFile').files[0];
-            const crcFile = document.getElementById('crcFile').files[0];
-            const visuFolder = document.getElementById('visuFolder').files;
+        deployFolderInput.onchange = (e) => {
+            const files = e.target.files;
+            selectedPrj = null;
+            selectedApp = null;
+            selectedCrc = null;
+            selectedVisuFiles = [];
+            selectedVisuPaths = [];
 
+            if (files.length === 0) {
+                fileStatusDiv.classList.add('hidden');
+                updateDeployButton();
+                return;
+            }
+
+            for (const file of files) {
+                const path = file.webkitRelativePath || file.name;
+                const parts = path.split('/');
+
+                // We expect FolderName/FileName.ext OR FolderName/visu/...
+                if (parts.length === 2) {
+                    const filename = parts[1].toLowerCase();
+                    if (filename.endsWith('.prj')) selectedPrj = file;
+                    else if (filename.endsWith('.app')) selectedApp = file;
+                    else if (filename.endsWith('.crc')) selectedCrc = file;
+                } else if (parts.length >= 3 && parts[1].toLowerCase() === 'visu') {
+                    selectedVisuFiles.push(file);
+                    // Adjust path to start with 'visu/' for the backend
+                    selectedVisuPaths.push(parts.slice(1).join('/'));
+                }
+            }
+
+            fileStatusDiv.classList.remove('hidden');
+            updateStatusItem(statusPrj, !!selectedPrj);
+            updateStatusItem(statusApp, !!selectedApp);
+            updateStatusItem(statusCrc, !!selectedCrc);
+            updateStatusItem(statusVisu, selectedVisuFiles.length > 0);
+
+            updateDeployButton();
+        };
+
+        function updateStatusItem(el, exists) {
+            const icon = el.querySelector('.status-icon');
+            const text = el.querySelector('.status-text');
+            if (exists) {
+                icon.textContent = '✅';
+                text.classList.remove('text-gray-400');
+                text.classList.add('text-green-500');
+            } else {
+                icon.textContent = '❌';
+                text.classList.remove('text-green-500');
+                text.classList.add('text-gray-400');
+            }
+        }
+
+        function updateDeployButton() {
+            const isValid = selectedPrj && selectedApp && selectedCrc && selectedVisuFiles.length > 0;
+            deployBtn.disabled = !isValid;
+            if (isValid) {
+                deployBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                deployBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        deployBtn.onclick = async () => {
             const selectedRigs = Array.from(document.querySelectorAll('.rig-checkbox:checked')).map(cb => cb.value);
 
             if (selectedRigs.length === 0) {
@@ -295,8 +374,8 @@
                 return;
             }
 
-            if (!prjFile || !appFile || !crcFile) {
-                alert('Please select all required files (.prj, .app, .crc).');
+            if (!selectedPrj || !selectedApp || !selectedCrc || selectedVisuFiles.length === 0) {
+                alert('Please select a valid deployment folder containing all required files.');
                 return;
             }
 
@@ -310,18 +389,14 @@
                 const formData = new FormData();
                 formData.append('username', sessionUser);
                 formData.append('password', sessionPassword);
-                formData.append('prj_file', prjFile);
-                formData.append('app_file', appFile);
-                formData.append('crc_file', crcFile);
+                formData.append('prj_file', selectedPrj);
+                formData.append('app_file', selectedApp);
+                formData.append('crc_file', selectedCrc);
 
-                if (visuFolder.length > 0) {
-                    const paths = [];
-                    for (let i = 0; i < visuFolder.length; i++) {
-                        formData.append('visu_files', visuFolder[i]);
-                        paths.push(visuFolder[i].webkitRelativePath);
-                    }
-                    formData.append('visu_paths', JSON.stringify(paths));
+                for (let i = 0; i < selectedVisuFiles.length; i++) {
+                    formData.append('visu_files', selectedVisuFiles[i]);
                 }
+                formData.append('visu_paths', JSON.stringify(selectedVisuPaths));
 
                 const uploadRes = await fetch('/api/deploy/upload', {
                     method: 'POST',
@@ -369,6 +444,7 @@
                     deployBtn.disabled = false;
                     deployBtn.textContent = 'START DEPLOYMENT';
                     deployBtn.classList.remove('opacity-50');
+                    updateDeployButton();
                 }, 5000);
             }
         };
