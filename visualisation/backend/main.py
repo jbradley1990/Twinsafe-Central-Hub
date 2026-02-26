@@ -11,17 +11,6 @@ app = FastAPI(title="Twinsafe Central Hub")
 
 WEBVISU_URL = "http://10.1.6.7:9000"  # ← adjust to your HMI
 
-@app.middleware("http")
-async def bounce_portal_host(request: Request, call_next):
-    host = request.url.hostname or ""
-    if host.lower() == "rnd-portal.valves.co.uk":
-        # Do not redirect if the request is for our own API, pages, assets, or styles
-        path = request.url.path
-        our_paths = ["/api", "/pages", "/assets", "/styles", "/guide", "/static"]
-        if not any(path.startswith(p) for p in our_paths) and path != "/":
-            return RedirectResponse(url=WEBVISU_URL)
-    return await call_next(request)
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

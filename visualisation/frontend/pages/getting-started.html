@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Getting Started</title>
   <script src="../assets/tailwind.js"></script>
   <link rel="stylesheet" href="../styles/main.css" />
@@ -46,6 +46,44 @@
       width: 100%;
       height: 100%;
     }
+
+    /* --- FAKE FULLSCREEN CSS --- */
+    .embed-container.fake-fullscreen {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: none !important;
+      z-index: 99999 !important;
+      border-radius: 0 !important;
+      margin: 0 !important;
+    }
+
+    .custom-fs-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 8px 14px;
+      border-radius: 6px;
+      z-index: 50; /* Sits above the iframe */
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .custom-fs-btn:hover {
+      background: rgba(0, 0, 0, 0.9);
+      transform: scale(1.05);
+    }
   </style>
 </head>
 <body class="body-styles flex flex-col h-screen">
@@ -81,100 +119,109 @@
 
   <main class="flex-grow p-6 overflow-hidden">
     <div class="panel h-full overflow-y-auto p-8 bg-neutral-900">
-        <article class="mx-auto"> <section id="user-authentication" class="guide-section active">
+        <article class="mx-auto"> 
+          
+          <section id="user-authentication" class="guide-section active">
             <h1 class="text-4xl font-bold mb-8">User Authentication</h1>
-            <div class="embed-container rounded-xl border border-neutral-700 shadow-2xl bg-black">
+            <div class="embed-container rounded-xl border border-neutral-700 shadow-2xl bg-black" id="container-auth">
+              <button class="custom-fs-btn" onclick="toggleFakeFullscreen('container-auth', this)">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+                Expand
+              </button>
               <iframe 
                 src="https://app.supademo.com/embed/cmlrxgxew156a1189u64a5k4t" 
-                allow="clipboard-write; fullscreen" 
-                frameborder="0" 
-                webkitallowfullscreen="true" 
-                mozallowfullscreen="true" 
-                allowfullscreen="true">
+                allow="clipboard-write" 
+                frameborder="0">
               </iframe>
             </div>
           </section>
 
           <section id="test-details" class="guide-section">
             <h1 class="text-4xl font-bold mb-8">Test Details</h1>
-            <div class="embed-container rounded-xl border border-neutral-700 shadow-2xl bg-black">
+            <div class="embed-container rounded-xl border border-neutral-700 shadow-2xl bg-black" id="container-test-details">
+              <button class="custom-fs-btn" onclick="toggleFakeFullscreen('container-test-details', this)">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+                Expand
+              </button>
               <iframe 
                 src="https://app.supademo.com/embed/cmlqf2ius2jwjegrdaa6z6l6u" 
-                allow="clipboard-write; fullscreen" 
-                frameborder="0" 
-                webkitallowfullscreen="true" 
-                mozallowfullscreen="true" 
-                allowfullscreen="true">
+                allow="clipboard-write" 
+                frameborder="0">
               </iframe>
             </div>
           </section>
 
           <section id="unique-numbers" class="guide-section">
             <h1 class="text-4xl font-bold mb-8">Unique Numbers</h1>
-            <div class="embed-container rounded-xl border border-neutral-700 shadow-2xl bg-black">
+            <div class="embed-container rounded-xl border border-neutral-700 shadow-2xl bg-black" id="container-unique-numbers">
+              <button class="custom-fs-btn" onclick="toggleFakeFullscreen('container-unique-numbers', this)">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+                Expand
+              </button>
               <iframe 
                 src="https://app.supademo.com/embed/cmlrxvi7o16pa1189rv41qwke" 
-                allow="clipboard-write; fullscreen" 
-                frameborder="0" 
-                webkitallowfullscreen="true" 
-                mozallowfullscreen="true" 
-                allowfullscreen="true">
+                allow="clipboard-write" 
+                frameborder="0">
               </iframe>
             </div>
           </section>
 
           <section id="transducer-setup" class="guide-section">
             <h1 class="text-4xl font-bold mb-8">Transducer Setup</h1>
-            <div class="embed-container rounded-xl border border-neutral-700 shadow-2xl bg-black">
+            <div class="embed-container rounded-xl border border-neutral-700 shadow-2xl bg-black" id="container-transducer">
+              <button class="custom-fs-btn" onclick="toggleFakeFullscreen('container-transducer', this)">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+                Expand
+              </button>
               <iframe 
                 src="https://app.supademo.com/embed/cmls332sn1o3p1189d7urt3hl" 
-                allow="clipboard-write; fullscreen" 
-                frameborder="0" 
-                webkitallowfullscreen="true" 
-                mozallowfullscreen="true" 
-                allowfullscreen="true">
+                allow="clipboard-write" 
+                frameborder="0">
               </iframe>
             </div>
           </section>
 
           <section id="testing" class="guide-section">
             <h1 class="text-4xl font-bold mb-8">Testing</h1>
-            <div class="embed-container rounded-xl border border-neutral-700 shadow-2xl bg-black">
+            <div class="embed-container rounded-xl border border-neutral-700 shadow-2xl bg-black" id="container-testing">
+              <button class="custom-fs-btn" onclick="toggleFakeFullscreen('container-testing', this)">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+                Expand
+              </button>
               <iframe 
                 src="https://app.supademo.com/embed/cmls3qczr1pqq118906wen0i9" 
-                allow="clipboard-write; fullscreen" 
-                frameborder="0" 
-                webkitallowfullscreen="true" 
-                mozallowfullscreen="true" 
-                allowfullscreen="true">
+                allow="clipboard-write" 
+                frameborder="0">
               </iframe>
             </div>
           </section>
 
           <section id="trend" class="guide-section">
             <h1 class="text-4xl font-bold mb-8">Trend</h1>
-            <div class="embed-container rounded-xl border border-neutral-700 shadow-2xl bg-black">
+            <div class="embed-container rounded-xl border border-neutral-700 shadow-2xl bg-black" id="container-trend">
+              <button class="custom-fs-btn" onclick="toggleFakeFullscreen('container-trend', this)">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+                Expand
+              </button>
               <iframe 
                 src="https://app.supademo.com/embed/cmls69ql31vy91189zdgi41rg" 
-                allow="clipboard-write; fullscreen" 
-                frameborder="0" 
-                webkitallowfullscreen="true" 
-                mozallowfullscreen="true" 
-                allowfullscreen="true">
+                allow="clipboard-write" 
+                frameborder="0">
               </iframe>
             </div>
           </section>
 
           <section id="previous-pdf" class="guide-section">
             <h1 class="text-4xl font-bold mb-8">Previous PDF</h1>
-            <div class="embed-container rounded-xl border border-neutral-700 shadow-2xl bg-black">
+            <div class="embed-container rounded-xl border border-neutral-700 shadow-2xl bg-black" id="container-prev-pdf">
+              <button class="custom-fs-btn" onclick="toggleFakeFullscreen('container-prev-pdf', this)">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+                Expand
+              </button>
               <iframe 
                 src="https://app.supademo.com/embed/cmlrxgxew156a1189u64a5k4t" 
-                allow="clipboard-write; fullscreen" 
-                frameborder="0" 
-                webkitallowfullscreen="true" 
-                mozallowfullscreen="true" 
-                allowfullscreen="true">
+                allow="clipboard-write" 
+                frameborder="0">
               </iframe>
             </div>
           </section>
@@ -407,6 +454,30 @@ Sales Order
     }
     window.addEventListener("hashchange", route);
     document.addEventListener("DOMContentLoaded", route);
+
+    // Fake Fullscreen Logic
+    function toggleFakeFullscreen(containerId, btn) {
+      const container = document.getElementById(containerId);
+      const isFullscreen = container.classList.contains('fake-fullscreen');
+
+      if (!isFullscreen) {
+        // Expand to fullscreen
+        container.classList.add('fake-fullscreen');
+        // Change button text/icon to "Close"
+        btn.innerHTML = `
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>
+          Close
+        `;
+      } else {
+        // Shrink back to normal
+        container.classList.remove('fake-fullscreen');
+        // Change button text/icon back to "Expand"
+        btn.innerHTML = `
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+          Expand
+        `;
+      }
+    }
   </script>
 </body>
 </html>
